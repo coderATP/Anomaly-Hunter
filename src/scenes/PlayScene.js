@@ -8,20 +8,23 @@ import { PlayerToMarketMovement } from "../movements/PlayerToMarketMovement.js";
 import { PlayerToFoundationMovement } from "../movements/PlayerToFoundationMovement.js";
 import { ComputerMovement } from "../movements/ComputerMovement.js";
 
-import { EchoesOfEternity } from "../EchoesOfEternity.js";
+import { AnomalyHunter } from "../AnomalyHunter.js";
 import { eventEmitter } from "../events/EventEmitter.js";
 import { Time } from "../events/Time.js";
 
 import { GameplayUI } from "../ui/GameplayUI.js";
 
-
+import { SingleDeckToHand } from "../movements/SingleDeckToHand.js";
+import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
+import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
+ 
 
 export class PlayScene extends BaseScene{
     constructor(config){
         super("PlayScene", config);
         this.config = config;
         this.commandHandler = new CommandHandler(this);
-        this.echoes = new EchoesOfEternity(this);
+        this.anomalyHunter = new AnomalyHunter(this);
         this.textDisplayTimer = 0;
         this.textDisplayInterval = 2300;
     }
@@ -93,7 +96,6 @@ export class PlayScene extends BaseScene{
     }
     
     handleClickEvent(){
-
         return this;
     }
     
@@ -157,7 +159,6 @@ export class PlayScene extends BaseScene{
         tempDeck = [];
         return array;
     }
- 
     adjustInGameTextDisplayRate(delta){
         if(this.textDisplayTimer < this.textDisplayInterval){
             this.textDisplayTimer+= delta;
@@ -168,7 +169,6 @@ export class PlayScene extends BaseScene{
             this.textDisplayTimer = this.textDisplayInterval;
         }
     }
-    
     dealCard(event){
         let zoneIndex; 
         this.lastAction = "deal";
@@ -327,6 +327,14 @@ export class PlayScene extends BaseScene{
         array.sort((a, b)=> a.getData("value") - b.getData("value"))
     }
    
+    getCardDimensions(){
+        let card = this.createCard("null", 0,0);
+        const originalWidth = card.displayWidth;
+        const originalHeight = card.displayHeight;
+        card.destroy();
+        card = null;
+        return {originalWidth, originalHeight}
+    } 
     create(){
         const { PreloadScene } = this.game.scene.keys;
         this.preloadScene = PreloadScene;
@@ -342,22 +350,32 @@ export class PlayScene extends BaseScene{
         this.watch = new Time(this);
         //this.watch.setUpWatch(this.gameplayUI.timeIcon.label).startWatch(this.gameplayUI.timeIcon.label);
         //game
-        this.echoes.newGame();
-        
+        this.anomalyHunter.newGame();
+        //
+        this.beginRound();
         //events
         this.handleDragEvent().handleDropEvent().handleClickEvent();
        
     }
     
-    getCardDimensions(){
-        let card = this.createCard("null", 0,0);
-        const originalWidth = card.displayWidth;
-        const originalHeight = card.displayHeight;
-        card.destroy();
-        card = null;
-        return {originalWidth, originalHeight}
+    beginRound(){
+        //display Round 1
+        this.gameplayUI.createNewTurnMessage(1);
+        //remove message after 2 sec
+        //and aend anomaly card down from outworld
+        setTimeout(()=>{
+            this.gameplayUI.hideMessage();
+            const command = new OutworldToAnomaly(this);
+            this.commandHandler.execute(command);
+        }, 2000)
+        //send cards to Hand afterward
+        setTimeout(()=>{
+            const otherCommand = new MultipleDeckToHand(this);
+            this.commandHandler.execute(otherCommand); 
+        }, 3500)
     }
     update(time, delta){
        // this.adjustInGameTextDisplayRate(delta);
+       this.gameplayUI.update(time, delta);
     }
 }

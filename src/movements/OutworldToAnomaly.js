@@ -1,0 +1,56 @@
+import { Movement } from "./Movement.js";
+
+export class OutworldToAnomaly extends Movement{
+    constructor(scene){
+        super(scene);
+        this.id = "outworldToAnomaly";
+    }
+    
+    execute(){
+        const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
+        const { anomalies } = this.scene.anomalyHunter;
+        const sourceContainer = anomalies;
+        const targetContainer = anomalyPile.container;
+        
+        if(!sourceContainer.length) return;
+        this.card = sourceContainer.list[sourceContainer.length-1];
+        //display card frame
+        this.card.setFrame(this.card.getData("frame"));
+        
+        this.targetY = targetContainer.y - sourceContainer.y;
+        this.targetX = targetContainer.x - sourceContainer.x;
+       
+        this.scene.tweens.add({
+            targets: this.card,
+            y: this.targetY,
+            x: this.targetX,
+            displayWidth: targetContainer.width,
+            displayHeight: targetContainer.height,
+            duration: 1500,
+            ease: 'Bounce.out',
+            onComplete: ()=>{
+                const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card")
+                    .setInteractive({draggable: false})
+                    .setDisplaySize(targetContainer.width, targetContainer.height)
+                    .setFrame(this.card.getData("frame"));
+                card.setData({
+                    x: card.x,
+                    y: card.y,
+                    sourceZone: "outworld",
+                    frame: this.card.getData("frame"),
+                    suit: this.card.getData("suit"),
+                    colour: this.card.getData("colour"),
+                    value: this.card.getData("value"),
+                    index: targetContainer.getData("index")
+                });
+                
+                targetContainer.add(card);
+                card.setPosition(0, 0);
+                card.setData({x: card.x, y: card.y}) 
+                
+                sourceContainer.list.pop();
+                this.card = null;
+            }
+        })
+    }
+}

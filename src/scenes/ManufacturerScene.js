@@ -14,6 +14,9 @@ export class ManufacturerScene extends BaseScene{
     preload(){
        // this.showInterface()
         this.load.image("my_brand_logo", "images/my_brand_logo.png");
+        this.load.font('myFont', "fonts/MarioWorldPixelColor-3zBwX.ttf", "truetype");
+        this.load.font('myOtherFont', "fonts/Planes_ValMore.ttf", "truetype");
+
         this.load.audio("pop_up", "sounds/pop_up.ogg");
     }
     create(){

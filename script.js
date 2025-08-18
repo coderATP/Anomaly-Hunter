@@ -1,7 +1,6 @@
 import { ManufacturerScene } from "./src/scenes/ManufacturerScene.js";
 import { PreloadScene } from "./src/scenes/PreloadScene.js";
 import { MenuScene } from "./src/scenes/MenuScene.js";
-import { TableSelectionScene } from "./src/scenes/TableSelectionScene.js";
 import { PlayScene } from "./src/scenes/PlayScene.js";
 import { PauseScene } from "./src/scenes/PauseScene.js";
 import { ConfirmScene } from "./src/scenes/ConfirmScene.js";
@@ -60,7 +59,6 @@ window.addEventListener("load", ()=>{
             new ManufacturerScene(SHARED_CONFIG),
             new PreloadScene(SHARED_CONFIG),
             new MenuScene(SHARED_CONFIG),
-            new TableSelectionScene(SHARED_CONFIG),
             new PlayScene(SHARED_CONFIG),
             new PauseScene(SHARED_CONFIG),
             new ConfirmScene(SHARED_CONFIG),

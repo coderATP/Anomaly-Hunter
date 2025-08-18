@@ -42,7 +42,7 @@ export class MenuScene extends BaseScene{
         this.title.setPosition(this.config.width/2 - this.title.displayWidth/2, 10);
 
         this.ui.menu_playBtn.addEventListener("click", ()=>{
-            eventEmitter.emit("MenuToTableSelection");
+            eventEmitter.emit("MenuToPlay");
         }, {once: true}) 
         this.ui.menu_optionsBtn.addEventListener("click", ()=>{
             eventEmitter.emit("MenuToOptions");
@@ -53,8 +53,8 @@ export class MenuScene extends BaseScene{
         this.ui.menu_exitBtn.addEventListener("click", ()=>{
             eventEmitter.emit("MenuToExit");
         }, {once: true});
-        eventEmitter.once("MenuToTableSelection", ()=>{
-            this.scene.start("TableSelectionScene");
+        eventEmitter.once("MenuToPlay", ()=>{
+            this.scene.start("PlayScene");
         });
         eventEmitter.once("MenuToOptions", ()=>{
             this.scene.start("OptionsScene");

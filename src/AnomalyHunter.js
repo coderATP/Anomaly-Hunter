@@ -1,4 +1,4 @@
-export class EchoesOfEternity{
+export class AnomalyHunter{
     static CARD_BACK_FRAMES = [52, 53, 54, 55, 56, 57, 58, 59];
     static CARD_VALUES = [1,2,3,4,5,6,7,8,9,10,11,12,13];
     static CARD_START_FRAMES = {
@@ -22,9 +22,9 @@ export class EchoesOfEternity{
         this.table = undefined;
     }
     createDeck(){
-        for(let i = 0; i < EchoesOfEternity.CARD_SUITS.length; ++i ){
+        for(let i = 0; i < AnomalyHunter.CARD_SUITS.length; ++i ){
             
-            const startFrame = Object.values(EchoesOfEternity.CARD_START_FRAMES)[i];
+            const startFrame = Object.values(AnomalyHunter.CARD_START_FRAMES)[i];
             for(let j = 0; j < 13; ++j){
                const card = this.scene.createCard("null", this.config.width-120, 0)
                    .setOrigin(0)
@@ -32,10 +32,10 @@ export class EchoesOfEternity{
                    .setData({
                        frame: startFrame + j,
                        value: j+1,
-                       suit: EchoesOfEternity.CARD_SUITS[i],
-                       colour: Object.values(EchoesOfEternity.CARD_COLOURS)[i],
+                       suit: AnomalyHunter.CARD_SUITS[i],
+                       colour: Object.values(AnomalyHunter.CARD_COLOURS)[i],
                        index: "unknown",
-                       description: (j+1) + " OF " + EchoesOfEternity.CARD_SUITS[i] + "S"
+                       description: (j+1) + " OF " + AnomalyHunter.CARD_SUITS[i] + "S"
                    })
                
                this.deck.push(card);
@@ -66,35 +66,47 @@ export class EchoesOfEternity{
         //anomalies 4 Kings (rifts), 4 Aces (paradoxes)
         this.rifts = [], this.paradoxes = [];
         //add 4 Aces to paradoxes
-        this.deck.forEach((card, i)=>{
+        for(let i = 0; i < this.deck.length; ++i){
+            const card = this.deck[i];
             if(card.getData("value") === 1){
                 this.paradoxes.push( ...(this.deck.splice(i, 1)) );
             }
-        });
+        }
         //add 4 Kings to Rifts
-        this.deck.forEach((card, i)=>{
+        for(let i = 0; i < this.deck.length; ++i){
+            const card = this.deck[i];
             if(card.getData("value") === 13){
                 this.rifts.push( ...(this.deck.splice(i, 1)) );
             }
-        });
-        this.anomalies = [...this.rifts, ...this.paradoxes];
+        } 
         
+        const cardDimensions = this.scene.getCardDimensions();
+        
+        const centerX = this.scene.gameplayUI.middleSection.centerX - cardDimensions.originalWidth/2;
+        this.anomalies = this.scene.add.container(centerX, -200);
+        this.anomalies.add( [...this.rifts, ...this.paradoxes] );
+
         //add remaining 44 cards to deck
-        deck.container.add(this.deck.splice(0, this.deck.length)); 
+        deck.container.add(this.deck.splice(0, this.deck.length));
+        //adjust size of cards to fit in container
+        
         deck.container.list.forEach((card, i)=>{
-            card.setPosition(0, -i*0.25)
+            card.setDisplaySize(deck.width, deck.height);
+            card.setPosition(0, -i*0.25);
         })
     }
     setAnomalyCardsInfo(){
         const {anomalyPile} = this.scene.gameplayUI;
         if(!this.anomalies) return;
-        this.anomalies.forEach((card, i)=>{
+        this.anomalies.list.forEach((card, i)=>{
+            card.setPosition(0,0);
             switch(card.getData("value")){
                 case 1:{
                     card.setData({
                         category: "Time Paradox"
                     })
                     if(card.getData("suit") === "CLUB"){
+                        card.difficulty = 3;
                         card.setData({
                             level: "3",
                             title: "Resource Recycle",
@@ -103,6 +115,7 @@ export class EchoesOfEternity{
                         }) 
                     }
                     else if(card.getData("suit") === "DIAMOND"){
+                        card.difficulty = 5;
                         card.setData({
                             level: "5",
                             title: "Sequence Shift",
@@ -111,6 +124,8 @@ export class EchoesOfEternity{
                         })
                     }
                     else if(card.getData("suit") === "HEART"){
+                        card.difficulty = 7;
+
                         card.setData({
                             level: "7",
                             title: "Time Theft",
@@ -119,6 +134,8 @@ export class EchoesOfEternity{
                         })
                     }
                     else if(card.getData("suit") === "SPADE"){
+                        card.difficulty = 6;
+
                         card.setData({
                             level: "6",
                             title: "Suit Surge",
@@ -133,6 +150,8 @@ export class EchoesOfEternity{
                         category: "Time Rift"
                     })
                     if(card.getData("suit") === "CLUB"){
+                        card.difficulty = 4;
+
                         card.setData({
                             level: "4",
                             title: "Flux Frenzy",
@@ -141,6 +160,8 @@ export class EchoesOfEternity{
                         }) 
                     }
                     else if(card.getData("suit") === "DIAMOND"){
+                        card.difficulty = 8;
+
                         card.setData({
                             level: "8",
                             title: "Echo Effect",
@@ -149,6 +170,8 @@ export class EchoesOfEternity{
                         })
                     }
                     else if(card.getData("suit") === "HEART"){
+                        card.difficulty = 2;
+
                         card.setData({
                             level: "2",
                             title: "Chrono Chaos",
@@ -157,6 +180,8 @@ export class EchoesOfEternity{
                         })
                     }
                     else if(card.getData("suit") === "SPADE"){
+                        card.difficulty = 1;
+
                         card.setData({
                             level: "1",
                             title: "Temporal Turbulence",
@@ -167,9 +192,12 @@ export class EchoesOfEternity{
                 break;
                 }
             }
-        })
-        
+        });
+        this.sortAnomalyCardsBasedOnDifficulty();
     }
+    
+    sortAnomalyCardsBasedOnDifficulty(){ this.anomalies.sort('difficulty').reverse();  }
+    
     setDeckCardsInfo(){
         const {anomalyPile, deck, discard, hand } = this.scene.gameplayUI;
         //DECK INFO
@@ -267,6 +295,7 @@ export class EchoesOfEternity{
         //set info
         this.setDeckCardsInfo();
         this.setAnomalyCardsInfo();
+        
         const {deck} = this.scene.gameplayUI;
     }
     

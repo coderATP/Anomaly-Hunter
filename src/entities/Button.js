@@ -4,11 +4,12 @@ export class Button {
         this.scene = scene;
         this.config = scene.config;
         this.graphics = scene.add.graphics().setDepth(0);
+        this.currentFontSize = 1;
         //background color
-        this.setBackgroundColor(rect, 0xd09683, 0x000000, 1, 4);
+        this.setBackgroundColor(rect, 0x22aa22, 0x000000, 1, 4);
         //label (text)
         this.label = scene.add.text(0, 0,text,
-            {fontSize: "32px", fontFamily: "myOtherFont", color: "white"}
+            {fontSize: this.currentFontSize+"px", fontFamily: "myOtherFont", color: "white"}
         ).setOrigin(0).setDepth(11);
         //center text
         const paddingX = (rect.width - this.label.width)/2;
@@ -18,7 +19,7 @@ export class Button {
             rect.y + paddingY
         );
         //interactive
-        this.hitArea = scene.add.rectangle(rect.x*devicePixelRatio, rect.y*devicePixelRatio, rect.width*devicePixelRatio, rect.height*devicePixelRatio)
+        this.hitArea = scene.add.rectangle(rect.x, rect.y, rect.width, rect.height)
             .setDepth(0).setOrigin(0).setInteractive()
             .on("pointerdown", this.enterActiveState, this)
             .on("pointerover", this.enterHoverState, this)
@@ -68,13 +69,13 @@ export class Button {
     }
 
     enterRestState() {
-        const fillColor = 0xd09683;
+        const fillColor = 0x22aa22;
         const strokeColor = 0x0056b3;
-        this.changeBG(fillColor);
+        setTimeout(()=>{ this.changeBG(fillColor) }, 300)
     }
     enterActiveState() {
-        const fillColor = 0xff0000;
-        const strokeColor = 0x002752;
+        const fillColor = 0x00aa00;
+        const strokeColor = 0x00aa00;
         this.changeBG(fillColor, strokeColor); 
     }
     enterInactiveState() {
@@ -82,5 +83,12 @@ export class Button {
         const strokeColor = 0x004085;
         this.changeBG(fillColor);
     }
- 
+    
+    updateFontSize(time, delta){
+        if(this.label.width < this.rect.width-2){
+            this.currentFontSize++;
+            this.label.setFontSize(this.currentFontSize);
+            this.label.setPosition(this.rect.centerX - this.label.width/2, this.rect.centerY - this.label.height/2);
+        }
+    }
 }

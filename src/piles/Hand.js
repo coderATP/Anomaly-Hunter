@@ -4,8 +4,6 @@ export class Hand{
         this.id = id;
         this.rects = [];
         this.zones = [];
-        this.container = undefined;
-        this.containerIndex = undefined;
         this.containers = [];
         this.names = [];
     }
@@ -14,18 +12,16 @@ export class Hand{
         this.y = y;
         this.width = w;
         this.height = h;
-        this.containerIndex = containerIndex;
        //pile rectangles
-       this.rect = this.scene.createPileRect(x,y,w,h)
-       this.rects.push(this.rect);
+       this.rects.push(this.scene.createPileRect(x,y,w,h));
        //container
-       this.zone = this.scene.createDropZone(this.id + "Zone", x,y,w,h)
-       this.zone.setData({index: containerIndex-1});
-       this.zones.push(this.zone)
-       this.container = this.scene.add.container(x, y).setSize(w,h)//.setInteractive();
-       this.container.setData({index: containerIndex-1, ownerID: this.id});
- 
-       this.containers.push(this.container);
+       const zone = this.scene.createDropZone(this.id + "Zone", x,y,w,h)
+       zone.setData({index: containerIndex});
+       this.zones.push(zone);
+       
+       const container = this.scene.add.container(x, y).setSize(w,h)//.setInteractive();
+       container.setData({index: containerIndex, ownerID: this.id});
+       this.containers.push(container);
 
        return this; 
     }
