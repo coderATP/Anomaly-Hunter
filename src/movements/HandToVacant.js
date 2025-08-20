@@ -1,33 +1,23 @@
 import { Movement } from "./Movement.js";
 
-export class MultipleDeckToHand extends Movement{
-    constructor(scene){
+export class HandToVacant extends Movement{
+    constructor(scene, sourceContainer, targetContainer){
         super(scene);
-        this.id = "multipleDeckToHand";
-        this.movementCount = 0;
+        this.id = "handToVacant";
+        this.sourceContainer = sourceContainer;
+        this.targetContainer = targetContainer;
     }
     
     execute(){
         const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
         
-        const sourcePile = deck;
-        //target container must be one of the empty piles
-        //get the first empty container
-        let targetContainer;
-        for(let i = 0; i < hand.containers.length; ++i){
-            const container = hand.containers[i];
-            if(!container.length){
-                targetContainer = hand.containers[i];
-                break;
-            }
-        }
-        this.card = sourcePile.container.list[sourcePile.container.length-1];
-        //display card frame
-        if(!targetContainer) return;
-        this.card.setFrame(this.card.getData("frame"));
+        const sourceContainer = this.sourceContainer;
+        const targetContainer = this.targetContainer;
         
-        this.targetY = targetContainer.y - sourcePile.y;
-        this.targetX = targetContainer.x - sourcePile.x;
+        this.card = sourceContainer.list[sourceContainer.length-1];
+        
+        this.targetY = targetContainer.y - sourceContainer.y;
+        this.targetX = targetContainer.x - sourceContainer.x;
        
         this.scene.tweens.add({
             targets: this.card,
@@ -35,7 +25,7 @@ export class MultipleDeckToHand extends Movement{
             x: this.targetX,
             displayWidth: targetContainer.width,
             displayHeight: targetContainer.height,
-            duration: 200,
+            duration: 100,
             onComplete: ()=>{
                 const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card", true)
                     .setDisplaySize(targetContainer.width, targetContainer.height)
@@ -43,7 +33,7 @@ export class MultipleDeckToHand extends Movement{
                 card.setData({
                     x: card.x,
                     y: card.y,
-                    sourceZone: "DeckZone",
+                    sourceZone: "HandZone",
                     frame: this.card.getData("frame"),
                     suit: this.card.getData("suit"),
                     colour: this.card.getData("colour"),
@@ -55,19 +45,15 @@ export class MultipleDeckToHand extends Movement{
                     attributes: this.card.getData("attributes"),
                     category: this.card.getData("category"),
                     level: this.card.getData("level"),
-                    reward: this.card.getData("reward"),
+                    reward: this.card.getData("reward"), 
                 });
                 
                 targetContainer.add(card);
                 card.setPosition(0, 0);
                 card.setData({x: card.x, y: card.y}) 
                 
-                sourcePile.container.list.pop();
+                sourceContainer.list.pop();
                 this.card = null;
-                
-                //move four more cards
-                this.movementCount++;
-                if(this.movementCount < 5) this.execute();
             }
         })
     }

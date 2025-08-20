@@ -5,7 +5,10 @@ import { CommandHandler } from "../CommandHandler.js";
 import { SingleDeckToHand } from "../movements/SingleDeckToHand.js";
 import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
 import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
- 
+import { HandToVacant } from "../movements/HandToVacant.js";
+import { VisitorToHost } from "../movements/VisitorToHost.js";
+
+
 import { AnomalyHunter } from "../AnomalyHunter.js";
 import { eventEmitter } from "../events/EventEmitter.js";
 import { Time } from "../events/Time.js";
@@ -48,7 +51,7 @@ export class PlayScene extends BaseScene{
         return rect;
     }
     createDropZone(zoneType, x, y, w, h){
-        const zone = this.add.zone(x, y, w, h).setRectangleDropZone(w, h).setDepth(0)
+        const zone = this.add.zone(x, y, w, h).setRectangleDropZone(w, h)
         .setName(zoneType).setOrigin(0);
         if(this.config.debug){
             this.add.rectangle(x, y, w, h, 0x09144ff, 0.0).setDepth(0).setOrigin(0);
@@ -58,24 +61,52 @@ export class PlayScene extends BaseScene{
     
     handleDragEvent(){
         const { hand } = this.gameplayUI;
-        this.input.on("drag", (pointer, gameobject, dragX, dragY)=>{
+        this.input.on("dragstart", (pointer, gameobject, dragX, dragY)=>{
             let card = gameobject&& gameobject.type === "Image" ? gameobject : null;
-            switch(card.name){
-                case "HandCard":{
-                    card.setPosition(dragX, dragY);
-                    
+            if(!card) return;
+            let zoneType = card.getData("zone");
+            switch(zoneType){
+                case "hand":{
+                    //hide box when dragging
+                    this.regularCardTextbox.infoDisplayTimer = this.regularCardTextbox.infoDisplayInterval;
                     break;
                 }
             } 
-        })
+        }) 
+        this.input.on("drag", (pointer, gameobject, dragX, dragY)=>{
+            let card = gameobject&& gameobject.type === "Image" ? gameobject : null;
+            if(!card) return;
+            let zoneType = card.getData("zone");
+            switch(zoneType){
+                case "hand":{
+                    card.setPosition(dragX, dragY);
+                    //hide box when dragging
+                    this.regularCardTextbox.infoDisplayTimer = this.regularCardTextbox.infoDisplayInterval;
+                    break;
+                }
+            } 
+        });
         this.input.on("dragend", (pointer, gameobject, dropped)=>{
-          //  gameobject.setPosition(gameobject.getData("x"), gameobject.getData("y")); 
            //for invalid moves, snap back to original location
-           switch(gameobject.name){
-               case "HandCard":{
-                   if(!dropped) hand.handleMoveCardToWrongSpace(gameobject);
+           let card = gameobject&& gameobject.type === "Image" ? gameobject : null;
+           if(!card) return; 
+           let zoneType = card.getData("zone"); 
+           const sourcePileIndex = card.getData("index");
+           const sourceContainer = hand.containers[sourcePileIndex]; 
+           
+           switch(zoneType){
+               case "hand":{
+                   //rough movement
+                   //if(!dropped) hand.handleMoveCardToWrongSpace(gameobject);
+                   //smooth movement
+                   if(!dropped){
+                       const command = new HandToVacant(this, sourceContainer, sourceContainer);
+                       this.commandHandler.execute(command);  
+                   }
+                     
                break;
                }
+               default:{ break; }
            }
         })
         return this;
@@ -95,15 +126,23 @@ export class PlayScene extends BaseScene{
                     const targetContainer = hand.containers[targetPileIndex];
                     
                     //snap card back to (0,0) if dropped on same pile
-                    if(sourcePileIndex===targetPileIndex) card.setPosition(0,0);
+                    if(sourcePileIndex===targetPileIndex){
+                        //rough movement
+                         //card.setPosition(0,0);
+                        //smooth movement
+                        const command = new HandToVacant(this, sourceContainer, sourceContainer);
+                        this.commandHandler.execute(command); 
+                    }
                     else{
-                        //if target container isn't occupied, move
+                        //if target container is vacant , move
                         if(!targetContainer.length){
-                            
+                            const command = new HandToVacant(this, sourceContainer, targetContainer);
+                            this.commandHandler.execute(command); 
                         }
                         //if target container is occupied, swap
                         else{
-                            
+                            const command = new VisitorToHost(this, sourceContainer, targetContainer);
+                            this.commandHandler.execute(command); 
                         }
                     }
                 break;
@@ -119,14 +158,34 @@ export class PlayScene extends BaseScene{
     handleClickEvent(){
         //hand card clicked
         const { hand } = this.gameplayUI;
-        this.input.on("pointerup", (pointer, gameobject)=>{
+        this.input.on("pointerdown", (pointer, gameobject)=>{
             if(!gameobject[0]) return;
             //I'm tapping on a card image
             if(gameobject[0].type === "Image"){
+                
                 const zoneType = gameobject[0].getData("zone");
                 const card = gameobject[0];
-               // this.regularCardTextbox.setPosition(card).changeText(card);
+                switch(zoneType){
+                    case "hand":{
+                        this.regularCardTextbox.show(card);
+                    break;
+                    }
+                    case "anomaly":{
+                        alert("anomaly");
+                    break;
+                    }
+                    case "deck":{
+                        alert("deck");
+                    break;
+                    }
+                    case "discard":{
+                        alert("discard")
+                    break;
+                    }
+                    default:{ break; }
+                }
             }
+            else{ console.log("not an image")}
         })
         return this;
     }
@@ -191,16 +250,7 @@ export class PlayScene extends BaseScene{
         tempDeck = [];
         return array;
     }
-    adjustInGameTextDisplayRate(delta){
-        if(this.textDisplayTimer < this.textDisplayInterval){
-            this.textDisplayTimer+= delta;
-            this.showOne(this.playByPlayScreen, "grid", 0);
-        }
-        else{
-            this.hideOne(this.playByPlayScreen);
-            this.textDisplayTimer = this.textDisplayInterval;
-        }
-    }
+
     endTurn(){
         this.lastAction = "end";
         this.textDisplayTimer = 0;
@@ -328,7 +378,7 @@ export class PlayScene extends BaseScene{
         }, 3500)
     }
     update(time, delta){
-       // this.adjustInGameTextDisplayRate(delta);
-       this.gameplayUI.update(time, delta);
+        this.regularCardTextbox.displayCardInfo(delta);
+        this.gameplayUI.update(time, delta);
     }
 }

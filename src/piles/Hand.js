@@ -15,11 +15,11 @@ export class Hand{
        //pile rectangles
        this.rects.push(this.scene.createPileRect(x,y,w,h));
        //container
-       const zone = this.scene.createDropZone(this.id + "Zone", x,y,w,h)
+       const zone = this.scene.createDropZone(this.id + "Zone", x,y,w,h).setDepth(0)
        zone.setData({index: containerIndex});
        this.zones.push(zone);
        
-       const container = this.scene.add.container(x, y).setSize(w,h);
+       const container = this.scene.add.container(x, y).setSize(w,h).setDepth(1);
        container.setData({index: containerIndex, ownerID: this.id});
        this.containers.push(container);
 

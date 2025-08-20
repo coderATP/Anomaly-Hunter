@@ -83,8 +83,8 @@ export class AnomalyHunter{
         const cardDimensions = this.scene.getCardDimensions();
         
         const centerX = this.scene.gameplayUI.middleSection.centerX - cardDimensions.originalWidth/2;
-        this.anomalies = this.scene.add.container(centerX, -200);
-        this.anomalies.add( [...this.rifts, ...this.paradoxes] );
+        this.outworlders = this.scene.add.container(centerX, -200).setDepth(1);
+        this.outworlders.add( [...this.rifts, ...this.paradoxes] );
 
         //add remaining 44 cards to deck
         deck.container.add(this.deck.splice(0, this.deck.length));
@@ -92,13 +92,13 @@ export class AnomalyHunter{
         
         deck.container.list.forEach((card, i)=>{
             card.setDisplaySize(deck.width, deck.height)
-                .setPosition(0, -i*0.25)
+                .setPosition(-i*0.15, 0)
         })
     }
     setAnomalyCardsInfo(){
         const {anomalyPile} = this.scene.gameplayUI;
-        if(!this.anomalies) return;
-        this.anomalies.list.forEach((card, i)=>{
+        if(!this.outworlders) return;
+        this.outworlders.list.forEach((card, i)=>{
             card.setPosition(0,0).setData({zone: "anomaly"});
             switch(card.getData("value")){
                 case 1:{
@@ -196,7 +196,7 @@ export class AnomalyHunter{
      //   this.sortAnomalyCardsBasedOnDifficulty();
     }
     
-    sortAnomalyCardsBasedOnDifficulty(){ this.anomalies.sort('difficulty').reverse();  }
+    sortAnomalyCardsBasedOnDifficulty(){ this.outworlders.sort('difficulty').reverse();  }
     
     setDeckCardsInfo(){
         const {anomalyPile, deck, discard, hand } = this.scene.gameplayUI;

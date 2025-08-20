@@ -8,8 +8,8 @@ export class OutworldToAnomaly extends Movement{
     
     execute(){
         const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
-        const { anomalies } = this.scene.anomalyHunter;
-        const sourceContainer = anomalies;
+        const { outworlders } = this.scene.anomalyHunter;
+        const sourceContainer = outworlders;
         const targetContainer = anomalyPile.container;
         
         if(!sourceContainer.length) return;

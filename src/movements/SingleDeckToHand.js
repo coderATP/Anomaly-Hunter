@@ -42,7 +42,7 @@ export class SingleDeckToHand extends Movement{
                 card.setData({
                     x: card.x,
                     y: card.y,
-                    sourceZone: "marketZone",
+                    sourceZone: "DeckZone",
                     frame: this.card.getData("frame"),
                     suit: this.card.getData("suit"),
                     colour: this.card.getData("colour"),
