@@ -14,10 +14,13 @@ export class MultipleDeckToHand extends Movement{
         //target container must be one of the empty piles
         //get the first empty container
         let targetContainer;
-        hand.containers.forEach((container, i)=>{
-            if(container.length) return;
-            targetContainer = hand.containers[i];
-        });
+        for(let i = 0; i < hand.containers.length; ++i){
+            const container = hand.containers[i];
+            if(!container.length){
+                targetContainer = hand.containers[i];
+                break;
+            }
+        }
         this.card = sourcePile.container.list[sourcePile.container.length-1];
         //display card frame
         if(!targetContainer) return;
@@ -34,8 +37,7 @@ export class MultipleDeckToHand extends Movement{
             displayHeight: targetContainer.height,
             duration: 200,
             onComplete: ()=>{
-                const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card")
-                    .setInteractive({draggable: false})
+                const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card", true)
                     .setDisplaySize(targetContainer.width, targetContainer.height)
                     .setFrame(this.card.getData("frame"));
                 card.setData({
@@ -46,7 +48,14 @@ export class MultipleDeckToHand extends Movement{
                     suit: this.card.getData("suit"),
                     colour: this.card.getData("colour"),
                     value: this.card.getData("value"),
-                    index: targetContainer.getData("index")
+                    index: targetContainer.getData("index"),
+                    zone: "hand",
+                    rect: new Phaser.Geom.Rectangle(targetContainer.x, targetContainer.y, targetContainer.width, targetContainer.height),
+                    title: this.card.getData("title"),
+                    attributes: this.card.getData("attributes"),
+                    category: this.card.getData("category"),
+                    level: this.card.getData("level"),
+                    reward: this.card.getData("reward"),
                 });
                 
                 targetContainer.add(card);

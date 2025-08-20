@@ -26,7 +26,7 @@ export class AnomalyHunter{
             
             const startFrame = Object.values(AnomalyHunter.CARD_START_FRAMES)[i];
             for(let j = 0; j < 13; ++j){
-               const card = this.scene.createCard("null", this.config.width-120, 0)
+               const card = this.scene.createCard("null", this.config.width-120, 0, true)
                    .setOrigin(0)
                    .setFrame(59)
                    .setData({
@@ -91,15 +91,15 @@ export class AnomalyHunter{
         //adjust size of cards to fit in container
         
         deck.container.list.forEach((card, i)=>{
-            card.setDisplaySize(deck.width, deck.height);
-            card.setPosition(0, -i*0.25);
+            card.setDisplaySize(deck.width, deck.height)
+                .setPosition(0, -i*0.25)
         })
     }
     setAnomalyCardsInfo(){
         const {anomalyPile} = this.scene.gameplayUI;
         if(!this.anomalies) return;
         this.anomalies.list.forEach((card, i)=>{
-            card.setPosition(0,0);
+            card.setPosition(0,0).setData({zone: "anomaly"});
             switch(card.getData("value")){
                 case 1:{
                     card.setData({
@@ -193,7 +193,7 @@ export class AnomalyHunter{
                 }
             }
         });
-        this.sortAnomalyCardsBasedOnDifficulty();
+     //   this.sortAnomalyCardsBasedOnDifficulty();
     }
     
     sortAnomalyCardsBasedOnDifficulty(){ this.anomalies.sort('difficulty').reverse();  }
@@ -202,6 +202,10 @@ export class AnomalyHunter{
         const {anomalyPile, deck, discard, hand } = this.scene.gameplayUI;
         //DECK INFO
         deck.container.list.forEach((card, i)=>{
+            card.setData({
+                zone: "deck",
+                rect: new Phaser.Geom.Rectangle(deck.container.x, deck.container.y, deck.container.width, deck.container.height)
+            })
             switch(card.getData("value")){
                 case 2: case 3: case 4:{
                     card.setData({

@@ -2,22 +2,19 @@ import { BaseScene } from "./BaseScene.js";
 //command handler for card movements
 import { CommandHandler } from "../CommandHandler.js";
 //movements
-import { MarketToFoundationMovement } from "../movements/MarketToFoundationMovement.js";
-import { MarketToPlayerMovement } from "../movements/MarketToPlayerMovement.js";
-import { PlayerToMarketMovement } from "../movements/PlayerToMarketMovement.js";
-import { PlayerToFoundationMovement } from "../movements/PlayerToFoundationMovement.js";
-import { ComputerMovement } from "../movements/ComputerMovement.js";
-
+import { SingleDeckToHand } from "../movements/SingleDeckToHand.js";
+import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
+import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
+ 
 import { AnomalyHunter } from "../AnomalyHunter.js";
 import { eventEmitter } from "../events/EventEmitter.js";
 import { Time } from "../events/Time.js";
 
 import { GameplayUI } from "../ui/GameplayUI.js";
 
-import { SingleDeckToHand } from "../movements/SingleDeckToHand.js";
-import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
-import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
- 
+//text boxes
+import { RegularCardTextbox } from "../entities/textboxes/RegularCardTextbox.js";
+
 
 export class PlayScene extends BaseScene{
     constructor(config){
@@ -39,7 +36,8 @@ export class PlayScene extends BaseScene{
 
     }
     createCard(type, x, y){
-        const card =  this.add.image(x,y,"cards").setName(type).setOrigin(0).setScale(1).setDepth(5).setInteractive()
+        const card =  this.add.image(x,y,"cards").setName(type).setOrigin(0).setScale(1).setDepth(1)
+        .setInteractive({draggable: true})
         return card
     }
     createPileRect(x, y, w, h){
@@ -50,7 +48,7 @@ export class PlayScene extends BaseScene{
         return rect;
     }
     createDropZone(zoneType, x, y, w, h){
-        const zone = this.add.zone(x, y, w, h).setRectangleDropZone(w, h).setDepth(10)
+        const zone = this.add.zone(x, y, w, h).setRectangleDropZone(w, h).setDepth(0)
         .setName(zoneType).setOrigin(0);
         if(this.config.debug){
             this.add.rectangle(x, y, w, h, 0x09144ff, 0.0).setDepth(0).setOrigin(0);
@@ -59,36 +57,59 @@ export class PlayScene extends BaseScene{
     }
     
     handleDragEvent(){
+        const { hand } = this.gameplayUI;
         this.input.on("drag", (pointer, gameobject, dragX, dragY)=>{
-            //change position for a single card
-          //  gameobject.setPosition(dragX, dragY);
-            //change position for a stack of cards from tableau 
-
+            let card = gameobject&& gameobject.type === "Image" ? gameobject : null;
+            switch(card.name){
+                case "HandCard":{
+                    card.setPosition(dragX, dragY);
+                    
+                    break;
+                }
+            } 
         })
         this.input.on("dragend", (pointer, gameobject, dropped)=>{
           //  gameobject.setPosition(gameobject.getData("x"), gameobject.getData("y")); 
            //for invalid moves, snap back to original location
+           switch(gameobject.name){
+               case "HandCard":{
+                   if(!dropped) hand.handleMoveCardToWrongSpace(gameobject);
+               break;
+               }
+           }
         })
         return this;
     }
     
     handleDropEvent(){
+        const { hand } = this.gameplayUI;
         this.input.on("drop", (pointer, gameobject, dropZone)=>{
+           
             switch(dropZone.name){
                 //FOUNDATION DROP ZONE
-                case "playerZone":{
-                    //discard to foundation
+                case "HandZone":{
+                    const card = gameobject;
+                    const sourcePileIndex = card.getData("index");
+                    const targetPileIndex = dropZone.getData("index");
+                    const sourceContainer = hand.containers[sourcePileIndex];
+                    const targetContainer = hand.containers[targetPileIndex];
+                    
+                    //snap card back to (0,0) if dropped on same pile
+                    if(sourcePileIndex===targetPileIndex) card.setPosition(0,0);
+                    else{
+                        //if target container isn't occupied, move
+                        if(!targetContainer.length){
+                            
+                        }
+                        //if target container is occupied, swap
+                        else{
+                            
+                        }
+                    }
                 break;
                 }
-                //TABLEAU DROP ZONE
-                case "enemyZone":{
-                    //discard to tableau 
-                break;
-                }
-                //DISCARD PILE ZONE
-                case "foundationZone":{
-                    //tableau to discard
-                break;
+                default:{
+                    hand.handleMoveCardToWrongSpace(gameobject);
                 }
             }
         })
@@ -96,6 +117,17 @@ export class PlayScene extends BaseScene{
     }
     
     handleClickEvent(){
+        //hand card clicked
+        const { hand } = this.gameplayUI;
+        this.input.on("pointerup", (pointer, gameobject)=>{
+            if(!gameobject[0]) return;
+            //I'm tapping on a card image
+            if(gameobject[0].type === "Image"){
+                const zoneType = gameobject[0].getData("zone");
+                const card = gameobject[0];
+               // this.regularCardTextbox.setPosition(card).changeText(card);
+            }
+        })
         return this;
     }
     
@@ -169,95 +201,6 @@ export class PlayScene extends BaseScene{
             this.textDisplayTimer = this.textDisplayInterval;
         }
     }
-    dealCard(event){
-        let zoneIndex; 
-        this.lastAction = "deal";
-                this.dealing = true; // flag to only deal once
-                this.textDisplayTimer = 0;
-                this.ui.gameplayText.innerText = ("tap which card to deal");
-               
-        //movement
-        this.chainRxn.table.playerPile.containers.forEach(container=>{
-            container.setDepth(50)
-            container.list.forEach(card=>{
-                card.setDepth(50).setTint(0x00ff00)
-                card.once("pointerdown", ()=>{
-                    const zoneIndex = container.getData("index");
-                    
-                    switch(zoneIndex){
-                        case 0: case 1: case 2: case 3: case 4:{
-                            if(!this.dealing) return;
-                            if(this.lastAction !== "deal") return;
-
-                            const playerCard = container.list[0];
-                            const foundationContainer = this.chainRxn.table.foundationPile.container;
-                            const foundationCard = foundationContainer.list[foundationContainer.length-1];
-                           
-                            //execute deal to foundation
-                            //only if container isn't empty
-                            if(!playerCard){
-                                 // alert("P" + (zoneIndex+1)+" is not valid");
-                                  this.textDisplayTimer = 0;
-                                  this.ui.gameplayText.innerText = ("P" + (zoneIndex+1) +" is empty");
-                                  this.preloadScene.audio.play(this.preloadScene.audio.errorSound);
-                                  return;
-                            }  
-                            //only if cards are 1</> each other
-                            if(foundationCard.getData("value") !== playerCard.getData("value")+1 &&
-                              foundationCard.getData("value") !== playerCard.getData("value")-1 ){
-                                 // alert("P" + (zoneIndex+1)+" is not valid");
-                                  this.textDisplayTimer = 0;
-                                  this.ui.gameplayText.innerText = ("P" + (zoneIndex+1) +"(" + playerCard.getData("value")+") is not valid");
-                                  this.preloadScene.audio.play(this.preloadScene.audio.errorSound);
-                                  return;
-                            }
-                            const command = new PlayerToFoundationMovement(this, container);
-                            this.commandHandler.execute(command); 
-                            //gray out button, indicates dealing was successful
-                           // this.onGameplayButtonPressed(event.target);        
-                             
-                            this.dealing = false; //can no longer deal 
-                        break;
-                        }
-                    } 
-                })
-            })
-        })
-    }
-    swapCard(){
-        let zoneIndex;
-        this.lastAction = "swap";
-        this.swapping = true; //flag to only swap once
-        this.textDisplayTimer = 0;
-        this.ui.gameplayText.innerText = ("tap which card to swap");
-        //movement
-        this.chainRxn.table.playerPile.containers.forEach(container=>{
-            container.setDepth(50)
-            container.list.forEach(card=>{
-                card.setDepth(50).setTint(0x00ff00)
-                card.once("pointerdown", ()=>{
-                    const zoneIndex = container.getData("index");
-
-                    switch(zoneIndex){
-                        case 0: case 1: case 2: case 3: case 4:{
-                            if(!this.swapping) return;
-                            if(this.lastAction !== "swap") return;
-                            //disable button, indicates swap button has been clicked
-                            this.onGameplayButtonPressed(this.gameplayUI.swapBtn); 
-                            //exchange card with market
-                            const command = new MarketToPlayerMovement(this, container);
-                            this.commandHandler.execute(command);
-                            const otherCommand = new PlayerToMarketMovement(this, container);
-                            this.commandHandler.execute(otherCommand); 
-                            this.swapping = false; //can no longer swap  
-                            break;
-                        }
-                    }
-                })
-            })
-        })
-    }
-    
     endTurn(){
         this.lastAction = "end";
         this.textDisplayTimer = 0;
@@ -351,10 +294,20 @@ export class PlayScene extends BaseScene{
         //this.watch.setUpWatch(this.gameplayUI.timeIcon.label).startWatch(this.gameplayUI.timeIcon.label);
         //game
         this.anomalyHunter.newGame();
-        //
-        this.beginRound();
         //events
-        this.handleDragEvent().handleDropEvent().handleClickEvent();
+        this.beginRound();
+        this.handleClickEvent();
+        this.handleDragEvent();
+        this.handleDropEvent();
+        setTimeout(()=>{
+
+        }, 5000);
+ 
+        //instantiate each display textbox
+        this.regularCardTextbox = new RegularCardTextbox(this);
+      //  this.anomalyTextbox = new AnomalyTextbox(this);
+       // this.timeAgentTextbox = new TimeAgentTextbox(this);
+        //events
        
     }
     
@@ -362,7 +315,7 @@ export class PlayScene extends BaseScene{
         //display Round 1
         this.gameplayUI.createNewTurnMessage(1);
         //remove message after 2 sec
-        //and aend anomaly card down from outworld
+        //and send anomaly card down from outworld
         setTimeout(()=>{
             this.gameplayUI.hideMessage();
             const command = new OutworldToAnomaly(this);

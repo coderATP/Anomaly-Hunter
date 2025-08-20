@@ -19,7 +19,7 @@ export class Hand{
        zone.setData({index: containerIndex});
        this.zones.push(zone);
        
-       const container = this.scene.add.container(x, y).setSize(w,h)//.setInteractive();
+       const container = this.scene.add.container(x, y).setSize(w,h);
        container.setData({index: containerIndex, ownerID: this.id});
        this.containers.push(container);
 
@@ -37,5 +37,9 @@ export class Hand{
        this.name.setPosition(x/* + w/2 - name.width/2*/, y/*+h*/);
        this.names.push(name);
        return this;
+    }
+    
+    handleMoveCardToWrongSpace(card){
+        card.setPosition(0,0);
     }
 }

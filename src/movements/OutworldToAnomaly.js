@@ -29,10 +29,9 @@ export class OutworldToAnomaly extends Movement{
             duration: 1500,
             ease: 'Bounce.out',
             onComplete: ()=>{
-                const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card")
-                    .setInteractive({draggable: false})
+                const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card", true)
                     .setDisplaySize(targetContainer.width, targetContainer.height)
-                    .setFrame(this.card.getData("frame"));
+                    .setFrame(this.card.getData("frame"))
                 card.setData({
                     x: card.x,
                     y: card.y,
@@ -41,7 +40,14 @@ export class OutworldToAnomaly extends Movement{
                     suit: this.card.getData("suit"),
                     colour: this.card.getData("colour"),
                     value: this.card.getData("value"),
-                    index: targetContainer.getData("index")
+                    index: targetContainer.getData("index"),
+                    zone: "anomaly",
+                    rect: new Phaser.Geom.Rectangle(targetContainer.x, targetContainer.y, targetContainer.width, targetContainer.height),
+                    title: this.card.getData("title"),
+                    attributes: this.card.getData("attributes"),
+                    category: this.card.getData("category"),
+                    level: this.card.getData("level"),
+                    reward: this.card.getData("reward"),
                 });
                 
                 targetContainer.add(card);

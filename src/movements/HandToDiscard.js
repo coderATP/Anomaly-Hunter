@@ -1,32 +1,27 @@
 import { Movement } from "./Movement.js";
 
-export class SingleDeckToHand extends Movement{
-    constructor(scene){
+export class HandToDiscard extends Movement{
+    constructor(scene, sourceContainer){
         super(scene);
-        this.id = "singleDeckToHand";
+        this.id = "handToDiscard";
+        this.sourceContainer = sourceContainer;
     }
     
     execute(){
         const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
         
-        const sourcePile = deck;
+        const sourceContainer = this.container;
         //target container must be one of the empty piles
         //get the first empty container
-        let targetContainer;
-        for(let i = 0; i < hand.containers.length; ++i){
-            const container = hand.containers[i];
-            if(!container.length){
-                targetContainer = hand.containers[i];
-                break;
-            }
-        }
-        this.card = sourcePile.container.list[sourcePile.container.length-1];
+        const targetContainer = discard.container;
+
+        this.card = sourceContainer.list[sourceContainer.length-1];
         //display card frame
         if(!targetContainer) return;
         this.card.setFrame(this.card.getData("frame"));
         
-        this.targetY = targetContainer.y - sourcePile.y;
-        this.targetX = targetContainer.x - sourcePile.x;
+        this.targetY = targetContainer.y - sourceContainer.y;
+        this.targetX = targetContainer.x - sourceContainer.x;
        
         this.scene.tweens.add({
             targets: this.card,
@@ -36,7 +31,8 @@ export class SingleDeckToHand extends Movement{
             displayHeight: targetContainer.height,
             duration: 300,
             onComplete: ()=>{
-                const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card", true)
+                const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card")
+                    .setInteractive({draggable: false})
                     .setDisplaySize(targetContainer.width, targetContainer.height)
                     .setFrame(this.card.getData("frame"));
                 card.setData({
@@ -61,7 +57,7 @@ export class SingleDeckToHand extends Movement{
                 card.setPosition(0, 0);
                 card.setData({x: card.x, y: card.y}) 
                 
-                sourcePile.container.list.pop();
+                sourceContainer.list.pop();
                 this.card = null;
             }
         })

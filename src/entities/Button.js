@@ -10,7 +10,7 @@ export class Button {
         //label (text)
         this.label = scene.add.text(0, 0,text,
             {fontSize: this.currentFontSize+"px", fontFamily: "myOtherFont", color: "white"}
-        ).setOrigin(0).setDepth(11);
+        ).setOrigin(0).setDepth(0);
         //center text
         const paddingX = (rect.width - this.label.width)/2;
         const paddingY = (rect.height - this.label.height)/2;

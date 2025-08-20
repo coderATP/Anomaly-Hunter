@@ -177,8 +177,8 @@ export class GameplayUI {
         const deckHeight = 0.20 * this.config.height;
         const deckWidth = deckHeight * cardAspectRatio;
         
-        let deckX = this.middleSection.left + 5;
-        let deckY = this.middleSection.bottom - deckHeight - 5;
+        let deckX = this.middleSection.right - deckWidth - 5;
+        let deckY = this.middleSection.top + 5;
         
         pile.create(deckX, deckY, deckWidth, deckHeight);
     }
@@ -252,7 +252,7 @@ export class GameplayUI {
     }
     createNewTurnMessage(turn){
         this.turn = turn;
-        this.turnMessage = this.scene.add.text(0, 0, "Turn" + turn, {fontFamily: "myOtherFont", fontSize: "60px", color: "white"}).setOrigin(0)
+        this.turnMessage = this.scene.add.text(0, 0, "Turn " + turn, {fontFamily: "myOtherFont", fontSize: "60px", color: "white"}).setOrigin(0)
     
         this.turnMessage.setPosition(this.middleSection.centerX - this.turnMessage.width/2, this.middleSection.centerY - this.turnMessage.height/2)
             .setVisible(true);

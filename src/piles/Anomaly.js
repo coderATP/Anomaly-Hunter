@@ -13,7 +13,7 @@ export class AnomalyPile{
        //pile rectangle 
         this.rect = this.scene.createPileRect(x,y,w,h);
        //container
-       this.container = this.scene.add.container(x, y).setSize(w,h)//.setInteractive();
+       this.container = this.scene.add.container(x, y).setSize(w,h).setDepth(0);
        this.container.setData({index: containerIndex-1, ownerID: this.id});
         
        this.zone = this.scene.createDropZone(this.id + "Zone", x,y,w,h)
