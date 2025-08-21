@@ -14,6 +14,7 @@ window.addEventListener("load", ()=>{
     const GAME_HEIGHT = screen.height*devicePixelRatio;
     const ZOOM_FACTOR = 1;
     
+    
     const SHARED_CONFIG = {
         width: GAME_WIDTH, 
         height: GAME_HEIGHT,

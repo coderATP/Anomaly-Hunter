@@ -17,6 +17,7 @@ import { GameplayUI } from "../ui/GameplayUI.js";
 
 //text boxes
 import { RegularCardTextbox } from "../entities/textboxes/RegularCardTextbox.js";
+import { AnomalyTextbox } from "../entities/textboxes/AnomalyTextbox.js";
 
 
 export class PlayScene extends BaseScene{
@@ -166,12 +167,16 @@ export class PlayScene extends BaseScene{
                 const zoneType = gameobject[0].getData("zone");
                 const card = gameobject[0];
                 switch(zoneType){
+                        //drag event is very sensitive, it triggers at the slightest drag on the card
+                        //to prevent textbox from disappearing immediately after pointerdown event,
+                        //only display it after 50 milliseconds
+                        //if drag function needs to kick in, it will have done so before 50 ms 
                     case "hand":{
-                        this.regularCardTextbox.show(card);
+                        setTimeout(()=>{ this.regularCardTextbox.show(card) }, 50)
                     break;
                     }
                     case "anomaly":{
-                        alert("anomaly");
+                        setTimeout(()=>{ this.anomalyTextbox.show(card) }, 50)
                     break;
                     }
                     case "deck":{
@@ -344,18 +349,13 @@ export class PlayScene extends BaseScene{
         //this.watch.setUpWatch(this.gameplayUI.timeIcon.label).startWatch(this.gameplayUI.timeIcon.label);
         //game
         this.anomalyHunter.newGame();
-        //events
         this.beginRound();
-        this.handleClickEvent();
-        this.handleDragEvent();
-        this.handleDropEvent();
-        setTimeout(()=>{
-
-        }, 5000);
+        //events
+        this.handleClickEvent().handleDragEvent().handleDropEvent();
  
         //instantiate each display textbox
         this.regularCardTextbox = new RegularCardTextbox(this);
-      //  this.anomalyTextbox = new AnomalyTextbox(this);
+        this.anomalyTextbox = new AnomalyTextbox(this);
        // this.timeAgentTextbox = new TimeAgentTextbox(this);
         //events
        
@@ -379,6 +379,7 @@ export class PlayScene extends BaseScene{
     }
     update(time, delta){
         this.regularCardTextbox.displayCardInfo(delta);
+        this.anomalyTextbox.displayCardInfo(delta);
         this.gameplayUI.update(time, delta);
     }
 }

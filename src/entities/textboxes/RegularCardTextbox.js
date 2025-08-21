@@ -12,6 +12,7 @@ export class RegularCardTextbox {
         this.attributeGraphics = this.scene.add.graphics().setDepth(0);
 
         //label (text)
+        this.setFontSize();
         this.titleLabel = scene.add.text(0, 0, "",
             {fontSize: "30px", fontFamily: "myOtherFont", color: "white"}
         ).setOrigin(0).setDepth(11);
@@ -21,6 +22,22 @@ export class RegularCardTextbox {
         //timer for display
         this.infoDisplayTimer = this.infoDisplayInterval = 2000;
     }
+    setFontSize(){
+        this.titleFontSize = 0;
+        this.attributeFontSize = 0;
+        if(screen.width < 800){
+            this.titleFontSize = 35+"px";
+            this.attributeFontSize = 25+"px";
+        }
+        else if(screen.width < 1200){
+            this.titleFontSize = 40+"px";
+            this.attributeFontSize = 30+"px"; 
+        }
+        else{
+            this.titleFontSize = 45+"px";
+            this.attributeFontSize = 35+"px";
+        } 
+    } 
     setPosition(card){
         this.card = card;
         this.rect = card.getData("rect");
@@ -55,21 +72,38 @@ export class RegularCardTextbox {
         this.attributeLabel.setDepth( (card.depth+2) );
         this.attributeLabel.setText(card.getData("attributes"))
             .setWordWrapWidth(this.width-this.paddingX*2, true)
-            .setPosition(this.x+this.paddingX, this.titleLabel.y+this.titleLabel.height+this.paddingY)
             .setAlign("center")
             .setPadding(5,5,5,5)
           //  .setBackgroundColor("white")
-         //   .setFill("black")
+            .setFill("black") 
+        this.attributeLabel.setPosition(this.rect.centerX - this.attributeLabel.width/2 + this.paddingX, this.titleLabel.y+this.titleLabel.height+this.paddingY*3)
         
         this.backgroundGraphics.setDepth(card.depth+1);
         this.titleGraphics.setDepth(card.depth+1);
         this.attributeGraphics.setDepth(card.depth+1);
+       
         //bg
-        this.setBackgroundColor(this.x, this.y, this.width, this.titleLabel.height+this.attributeLabel.height+this.paddingY*3, 0x000000, this.backgroundGraphics);
+        this.setBackgroundColor(
+            this.x,
+            this.y - this.paddingY, 
+            this.width,
+            this.titleLabel.height + this.attributeLabel.height + this.paddingY*7,
+            0x000000, this.backgroundGraphics);
+         
         //title
-        this.setBackgroundColor(this.titleLabel.x-this.paddingX, this.titleLabel.y+this.paddingY, this.titleLabel.width+this.paddingX*2, this.titleLabel.height+this.paddingY*2, 0x00aa00, this.titleGraphics);
+        this.setBackgroundColor(
+            this.titleLabel.x-this.paddingX,
+            this.titleLabel.y,
+            this.titleLabel.width+this.paddingX*2, 
+            this.titleLabel.height+this.paddingY*2,
+            0x00aa00, this.titleGraphics);
         //attribute
-        this.setBackgroundColor(this.x+this.paddingX, this.titleLabel.y+this.titleLabel.height+this.paddingY, this.width-this.paddingX*2, this.attributeLabel.height, 0x0000aa, this.attributeGraphics);
+        this.setBackgroundColor(
+            this.x+this.paddingX, 
+            this.attributeLabel.y,
+            this.width-this.paddingX*2, 
+            this.attributeLabel.height, 
+            0xffffff, this.attributeGraphics);
         
         return this;
     }
