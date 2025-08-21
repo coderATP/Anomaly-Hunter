@@ -1,3 +1,5 @@
+import { Scroll } from "../entities/Scroll.js";
+
 export class AnomalyPile{
     constructor(scene, id){
         this.scene = scene;
@@ -18,6 +20,10 @@ export class AnomalyPile{
         
        this.zone = this.scene.createDropZone(this.id + "Zone", x,y,w,h).setDepth(0)
        this.zone.setData({index: containerIndex-1}); 
+       
+       //scroll
+       this.scroll = new Scroll(this.scene, this.rect);
+       this.scroll.createScroll().addTweens();
        return this; 
     }
 }

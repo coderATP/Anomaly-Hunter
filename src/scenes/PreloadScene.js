@@ -41,6 +41,8 @@ export class PreloadScene extends BaseScene{
                     this.load.image("time", "../images/time.png");
                     this.load.image("pause", "../images/pause.png");
                     this.load.image("instructions", "../images/instructions.png");
+                    this.load.image("scrollBody", "../images/scroll_body.png");
+                    this.load.image("scrollEnd", "../images/scroll_end.png");
 
                     this.load.image("gold_chain", "../images/gold_chain.png");
                     this.load.spritesheet("cards", "../images/cards.png",

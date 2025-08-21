@@ -193,7 +193,7 @@ export class AnomalyHunter{
                 }
             }
         });
-     //   this.sortAnomalyCardsBasedOnDifficulty();
+        this.sortAnomalyCardsBasedOnDifficulty();
     }
     
     sortAnomalyCardsBasedOnDifficulty(){ this.outworlders.sort('difficulty').reverse();  }
