@@ -13,39 +13,36 @@ export class Scroll{
             .setOrigin(0,0);
         
         this.marginY = 5;
-        this.body.setPosition(this.rect.centerX - this.body.displayWidth/2, this.rect.bottom + this.top.displayHeight + this.marginY);
-        const bodyRect = new Phaser.Geom.Rectangle(this.body.x, this.body.y, this.body.width, this.body.height);
+        this.setSize().fit();
         
-        this.top.setPosition(bodyRect.centerX - this.top.displayWidth/2,
-            bodyRect.top - this.top.displayHeight)
-        this.bottom.setPosition(bodyRect.centerX - this.top.displayWidth/2,
-            bodyRect.bottom) 
-        
-        
-        this.resizeToFitSection()
       return this;
     }
     
-    resizeToFitSection(){
+    setSize(){
+        this.width = this.rect.width*3.5;
+        const availableHeight = this.config.height - this.rect.bottom - this.marginY*2;
+        this.height = availableHeight;
+        this.x = this.rect.left - this.width/2;
+        this.y = this.rect.bottom;
+        return this;
+    }
+    fit(){
         //get aspect ratio of scroll sections
         const endAspectRatio = this.top.displayWidth / this.top.displayHeight;
         const bodyAspectRatio = this.body.displayWidth / this.body.displayHeight;
         
-        const availableHeight = this.config.height - this.top.y - this.marginY*3;
-        
-        this.body.setDisplaySize(availableHeight*bodyAspectRatio, availableHeight);
-        const bodyScaleFactorX = (this.body.displayWidth/this.body.width);
-        const bodyScaleFactorY = (this.body.displayHeight/this.body.height);
-        this.top.setDisplaySize(this.top.displayWidth*bodyScaleFactorX, this.top.displayHeight*bodyScaleFactorY);
-        this.bottom.setDisplaySize(this.bottom.displayWidth*bodyScaleFactorX, this.bottom.displayHeight*bodyScaleFactorY);
-        
-        this.body.setPosition(this.rect.centerX - this.body.displayWidth/2, this.rect.bottom + this.top.displayHeight + this.marginY);
-        const bodyRect = new Phaser.Geom.Rectangle(this.body.x, this.body.y, this.body.displayWidth, this.body.displayHeight);
-        this.top.setPosition(bodyRect.centerX - this.top.displayWidth/2,
-            bodyRect.top - this.top.displayHeight)
-        this.bottom.setPosition(bodyRect.centerX - this.top.displayWidth/2,
-            this.body.y + this.body.displayHeight - this.bottom.displayHeight)  
-        
+        //set new height/width of ends
+        this.top.displayWidth = this.bottom.displayWidth = this.width;
+        this.top.displayHeight = this.bottom.displayHeight = this.top.displayHeight * (this.top.displayWidth/this.top.width);
+        //set new height and width of body
+        this.body.displayWidth = this.top.displayWidth * 0.8;
+        this.body.displayHeight = this.height - this.top.displayHeight;
+        //set ends positions
+        this.top.setPosition(this.rect.centerX - this.top.displayWidth/2, this.y + this.marginY);
+        //set body position
+        this.body.setPosition(this.top.x + this.top.displayWidth*0.1, this.top.y + this.top.displayHeight); 
+        this.bottom.setPosition(this.rect.centerX - this.bottom.displayWidth/2, this.body.y + this.body.displayHeight - this.bottom.displayHeight);
+
     }
     addTweens(){
         this.scene.tweens.add({

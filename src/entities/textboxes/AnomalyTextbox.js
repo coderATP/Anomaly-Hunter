@@ -52,8 +52,8 @@ export class AnomalyTextbox {
     setPosition(card){
         this.card = card;
         this.rect = card.getData("rect");
-        this.width = this.rect.width*3.5;
-        this.height = this.rect.height;
+        this.width = this.rect.width * 6;
+        this.height = this.rect.height*2;
         this.x = this.rect.centerX - this.width/2;
         this.y = this.rect.top - this.height;
         this.infoDisplayTimer = 0;

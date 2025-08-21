@@ -161,7 +161,7 @@ export class GameplayUI {
         const cardDimensions = this.scene.getCardDimensions();
         const cardAspectRatio = cardDimensions.originalWidth/cardDimensions.originalHeight;
         
-        const anomalyWidth = 0.1 * this.config.width;
+        const anomalyWidth = 0.1 * this.middleSection.width;
         const anomalyHeight = anomalyWidth / cardAspectRatio;
         
         let anomalyX = this.middleSection.centerX - anomalyWidth/2;
