@@ -23,7 +23,8 @@ export class AnomalyPile{
        
        //scroll
        this.scroll = new Scroll(this.scene, this.rect);
-       this.scroll.createScroll().addTweens();
+       this.scroll.createScroll()
+       //this.addTweens();
        return this; 
     }
 }

@@ -35,7 +35,7 @@ window.addEventListener("load", ()=>{
     };
     
     const config= {
-        type: Phaser.CANVAS,
+        type: Phaser.AUTO,
         ...SHARED_CONFIG, 
         parent: "gameWrapper",
         backgroundColor: 0x21190,

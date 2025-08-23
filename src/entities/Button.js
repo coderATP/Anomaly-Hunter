@@ -85,7 +85,7 @@ export class Button {
     }
     
     updateFontSize(time, delta){
-        if(this.label.width < this.rect.width-2){
+        if(this.label.width < (this.rect.width*0.8) ){
             this.currentFontSize++;
             this.label.setFontSize(this.currentFontSize);
             this.label.setPosition(this.rect.centerX - this.label.width/2, this.rect.centerY - this.label.height/2);

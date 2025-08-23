@@ -18,10 +18,11 @@ export class AnomalyHunter{
         this.scene = scene;
         this.config = scene.config;
         this.opponentPiles = [];
-        this.deck = [];
+        this.deck = undefined;
         this.table = undefined;
     }
     createDeck(){
+        this.deck = this.scene.add.container(0,0);
         for(let i = 0; i < AnomalyHunter.CARD_SUITS.length; ++i ){
             
             const startFrame = Object.values(AnomalyHunter.CARD_START_FRAMES)[i];
@@ -38,7 +39,7 @@ export class AnomalyHunter{
                        description: (j+1) + " OF " + AnomalyHunter.CARD_SUITS[i] + "S"
                    })
                
-               this.deck.push(card);
+               this.deck.add(card);
             }
         }
         return this.deck;
@@ -49,14 +50,14 @@ export class AnomalyHunter{
     }
     
     shuffleDeck(){
-        let tempDeck = [];
+        let tempDeck = this.scene.add.container();
         while(this.deck.length){
             const randomPos = Math.floor(Math.random() * this.deck.length);
-            const randomCard = (this.deck.splice(randomPos, 1))[0];
-            tempDeck.push(randomCard);
+            const randomCard = (this.deck.list.splice(randomPos, 1))[0];
+            tempDeck.add(randomCard);
         }
         this.deck = tempDeck;
-        tempDeck = [];
+        tempDeck = null;
         return this.deck;
     }
     
@@ -64,36 +65,33 @@ export class AnomalyHunter{
         const {anomalyPile, deck, discard, hand } = this.scene.gameplayUI;
         
         //anomalies 4 Kings (rifts), 4 Aces (paradoxes)
-        this.rifts = [], this.paradoxes = [];
+        this.rifts = this.scene.add.container(0,0), this.paradoxes = this.scene.add.container(0,0);
         //add 4 Aces to paradoxes
-        for(let i = 0; i < this.deck.length; ++i){
-            const card = this.deck[i];
+        this.deck.getAll().forEach((card, i)=>{
             if(card.getData("value") === 1){
-                this.paradoxes.push( ...(this.deck.splice(i, 1)) );
+                this.paradoxes.add(card); 
             }
-        }
-        //add 4 Kings to Rifts
-        for(let i = 0; i < this.deck.length; ++i){
-            const card = this.deck[i];
-            if(card.getData("value") === 13){
-                this.rifts.push( ...(this.deck.splice(i, 1)) );
-            }
-        } 
-        
+            else if(card.getData("value") === 13){
+                this.rifts.add(card);
+            } 
+        })
+ 
         const cardDimensions = this.scene.getCardDimensions();
         
         const centerX = this.scene.gameplayUI.middleSection.centerX - cardDimensions.originalWidth/2;
         this.outworlders = this.scene.add.container(centerX, -200).setDepth(1);
-        this.outworlders.add( [...this.rifts, ...this.paradoxes] );
+        this.outworlders.add( [...this.rifts.list, ...this.paradoxes.list] );
 
         //add remaining 44 cards to deck
-        deck.container.add(this.deck.splice(0, this.deck.length));
+        deck.container.add(this.deck.list.splice(0, this.deck.length));
         //adjust size of cards to fit in container
         
         deck.container.list.forEach((card, i)=>{
             card.setDisplaySize(deck.width, deck.height)
                 .setPosition(-i*0.15, 0)
         })
+        //set all emptied containers to null;
+        this.rifts = this.anomalies = this.deck = null;
     }
     setAnomalyCardsInfo(){
         const {anomalyPile} = this.scene.gameplayUI;
@@ -111,16 +109,30 @@ export class AnomalyHunter{
                             level: "3",
                             title: "Resource Recycle",
                             attributes: "Play a random card from the discard pile and deal three more cards of the same suit.",
-                            reward: "4 resources"
-                        }) 
+                            reward: "4 resources",
+                            objectives: {
+                                dealDiscardCard: "Deal a card from Discard",
+                                dealThreeMore: "Deal 3 more cards of same suit"
+                            }
+                        })
                     }
                     else if(card.getData("suit") === "DIAMOND"){
                         card.difficulty = 5;
+                        const cards = [2,3,4,5,6,7,8,9,10];
+                        const firstCard = cards[Math.floor(Math.random()* (cards.length - 2)) ];
+                        const secondCard = cards[ (cards.indexOf(firstCard) + 1) ];
+                        const thirdCard = cards[ (cards.indexOf(secondCard) + 1) ];
+                        
                         card.setData({
                             level: "5",
                             title: "Sequence Shift",
-                            attributes: "Create a new sequence of 3 cards in sequential order, using at least one card that is currently out of sequence.",
-                            reward: "5 resources"
+                            attributes: "Create a new sequence of 3 cards in sequential order, using at least one of "+firstCard+', '+secondCard+', or '+thirdCard,
+                            reward: "5 resources",
+                            objectives: {
+                                playOneOfTheCards: "Play one of "+firstCard+', '+secondCard+', or '+thirdCard,
+                                playNextCard: "Play second card",
+                                playThirdCard: "Play third card"
+                            }
                         })
                     }
                     else if(card.getData("suit") === "HEART"){
@@ -130,7 +142,11 @@ export class AnomalyHunter{
                             level: "7",
                             title: "Time Theft",
                             attributes: "Play a Jack and neutralize its effect with an Expert Queen.",
-                            reward: "6 resources"
+                            reward: "6 resources",
+                            objectives:{
+                                playAJack: "Play A Jack",
+                                playAnExpertQueen: "Play an Expert Queen"
+                            }
                         })
                     }
                     else if(card.getData("suit") === "SPADE"){
@@ -140,7 +156,13 @@ export class AnomalyHunter{
                             level: "6",
                             title: "Suit Surge",
                             attributes: "Play four cards of the same suit in any order.",
-                            reward: "5 resources"
+                            reward: "5 resources",
+                            objectives:{
+                                playFirstCard: "Play first card",
+                                playSecondCard: "Play second card",
+                                playThirdCard: "Play third card",
+                                playFourthCard: "Play fourth card",
+                            }
                         })
                     } 
                 break;
@@ -156,8 +178,12 @@ export class AnomalyHunter{
                             level: "4",
                             title: "Flux Frenzy",
                             attributes: "Play three cards with different suits and ranks in descending pattern",
-                            reward: "4 resources"
-                        }) 
+                            reward: "4 resources",
+                            objectives: {
+                                playFirstCard: "Play first card",
+                                playNextCards: "Play 2 more cards in descending pattern",
+                            }
+                        })
                     }
                     else if(card.getData("suit") === "DIAMOND"){
                         card.difficulty = 8;
@@ -166,7 +192,11 @@ export class AnomalyHunter{
                             level: "8",
                             title: "Echo Effect",
                             attributes: "Play 2 sets of three cards with different ranks (e.g. 2-2-4-4-9-9), creating an 'echo' effect.",
-                            reward: "10 resources"
+                            reward: "10 resources",
+                            objectives:{
+                                playFirstSet: "Play first set of 3 cards",
+                                playSecondSet: "Play second set of 3 cards", 
+                            }
                         })
                     }
                     else if(card.getData("suit") === "HEART"){
@@ -175,8 +205,12 @@ export class AnomalyHunter{
                         card.setData({
                             level: "2",
                             title: "Chrono Chaos",
-                            attributes: "Play a pair of cards each from any two of Past, Present and Future Cards. (e.g. 2-4-7-6, or 4-3-10-10)",
-                            reward: "3 resources"
+                            attributes: "Play a pair of cards each from any two of Past, Present and Future Cards. (e.g. 2-4/7-6, or 4-3/10-10)",
+                            reward: "3 resources",
+                            objectives: {
+                                playFirstPair: "Play first pair",
+                                playSecondPair: "Play second pair"
+                            }
                         })
                     }
                     else if(card.getData("suit") === "SPADE"){
@@ -186,7 +220,12 @@ export class AnomalyHunter{
                             level: "1",
                             title: "Temporal Turbulence",
                             attributes: "Play 3 cards, from each of Past, Present and Future(e.g. 2-5-8 or 3-6-10)",
-                            reward: "2 resources"
+                            reward: "2 resources",
+                            objectives: {
+                                playPastCard: "Play Past Card",
+                                playPresentCard: "Play Present Card",
+                                playFutureCard: "Play Future Card"
+                            }
                         })
                     }  
                 break;
@@ -291,9 +330,9 @@ export class AnomalyHunter{
         })
     }
     newGame(){
-        if(!this.deck.length) this.deck = this.createDeck();
+        this.deck = this.createDeck();
         //shuffle deck
-        this.shuffleDeck(); 
+        this.shuffleDeck();
         //distribute cards to deck & anomaly piles
         this.addCardToPiles();
         //set info

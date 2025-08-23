@@ -133,15 +133,15 @@ export class GameplayUI {
             this.gameplayButtons.push(btn);
         }
         //set text
-        this.gameplayButtons[0].label.setText("Deal");
-        this.gameplayButtons[1].label.setText("Swap");
+        this.gameplayButtons[0].label.setText("Resolve");
+        this.gameplayButtons[1].label.setText("Recall");
         this.gameplayButtons[2].label.setText("Discard");
         this.gameplayButtons[3].label.setText("Undo");
         this.gameplayButtons[4].label.setText("Redo");
         this.gameplayButtons[5].label.setText("End");
         //set reference
-        this.dealBtn = this.gameplayButtons[0];
-        this.swapBtn = this.gameplayButtons[1];
+        this.resolveBtn = this.gameplayButtons[0];
+        this.recallBtn = this.gameplayButtons[1];
         this.discardBtn = this.gameplayButtons[2];
         this.undoBtn = this.gameplayButtons[3];
         this.redoBtn = this.gameplayButtons[4];

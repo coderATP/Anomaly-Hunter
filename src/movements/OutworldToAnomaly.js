@@ -13,6 +13,8 @@ export class OutworldToAnomaly extends Movement{
         const targetContainer = anomalyPile.container;
         
         if(!sourceContainer.length) return;
+        //DEVELOPER MODE TO QUICKLY RESOLVE ANY ANOMALY
+       // sourceContainer.bringToTop(sourceContainer.list[6])
         this.card = sourceContainer.list[sourceContainer.length-1];
         //display card frame
         this.card.setFrame(this.card.getData("frame"));
@@ -48,6 +50,7 @@ export class OutworldToAnomaly extends Movement{
                     category: this.card.getData("category"),
                     level: this.card.getData("level"),
                     reward: this.card.getData("reward"),
+                    objectives: this.card.getData("objectives")
                 });
                 
                 targetContainer.add(card);
@@ -56,6 +59,8 @@ export class OutworldToAnomaly extends Movement{
                 
                 sourceContainer.list.pop();
                 this.card = null;
+                //add objectives
+                anomalyPile.scroll.addObjectives(card).addCheckboxes();
             }
         })
     }

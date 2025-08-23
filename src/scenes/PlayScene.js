@@ -7,7 +7,7 @@ import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
 import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { HandToVacant } from "../movements/HandToVacant.js";
 import { VisitorToHost } from "../movements/VisitorToHost.js";
-
+import { HandToDiscard } from "../movements/HandToDiscard.js";
 
 import { AnomalyHunter } from "../AnomalyHunter.js";
 import { eventEmitter } from "../events/EventEmitter.js";
@@ -156,9 +156,28 @@ export class PlayScene extends BaseScene{
         return this;
     }
     
+    resolveAnomaly(){
+        this.gameplayUI.resolveBtn.hitArea.on('pointerdown', ()=>{
+            const {hand} = this.gameplayUI;
+            hand.containers.forEach((container, i)=>{
+                if(container.length){
+                    container.list.forEach(card=>{
+                        card.on("pointerdown", ()=>{
+                            const command = new HandToDiscard(this, container);
+                            this.commandHandler.execute(command);
+                        })
+                    })
+                }
+            })
+        })
+    }
+    recallMovement(){
+        
+    }
     handleClickEvent(){
         //hand card clicked
         const { hand } = this.gameplayUI;
+        this.resolveAnomaly()
         this.input.on("pointerdown", (pointer, gameobject)=>{
             if(!gameobject[0]) return;
             //I'm tapping on a card image
@@ -376,6 +395,51 @@ export class PlayScene extends BaseScene{
             const otherCommand = new MultipleDeckToHand(this);
             this.commandHandler.execute(otherCommand); 
         }, 3500)
+    }
+    //HELPER FUNCTION
+    moveAlongSpline(scene, image, points, duration = 3000) {
+        //set image origin to center
+        image.setOrigin(0.5)
+        // Create a spline from 4 points
+        const curve = new Phaser.Curves.Spline(points);
+    
+        // Param object for tweening t from 0 -> 1
+        let t = { value: 0 };
+    
+        scene.tweens.add({
+            targets: t,
+            value: 1,
+            duration: duration,
+            ease: 'Linear',
+            onUpdate: () => {
+                // Get position at t
+                const p = curve.getPoint(t.value);
+                image.setPosition(p.x, p.y);
+    
+                // Get tangent (direction vector)
+                const tangent = curve.getTangent(t.value);
+    
+                // Calculate angle in radians -> convert to degrees
+                const angle = Phaser.Math.RadToDeg(
+                    Phaser.Math.Angle.Between(0, 0, tangent.x, tangent.y)
+                );
+    
+              //  image.setAngle(angle);
+            },
+            onComplete: ()=>{
+                scene.tweens.add({
+                    targets: image,
+                   // rotation: 0,
+                    duration: 150,
+                })
+                image.setPosition(
+                    points[points.length-2],
+                    points[points.length-1]
+                )
+            }
+        });
+    
+        return curve; // optional, useful if you want to debug draw the curve
     }
     update(time, delta){
         this.regularCardTextbox.displayCardInfo(delta);
