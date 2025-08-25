@@ -109,13 +109,14 @@ export class Scroll{
             );
             graphics.strokeRect(rect.x, rect.y, rect.width, rect.height);
             this.checkboxes.push(rect);
-            //this.checkBox(i);
         }
         return this;
     }
     checkBox(index){
         this.checkboxGraphics[index].clear();
         this.checkboxGraphics[index].fillStyle(0x000000);
+        this.checkboxGraphics[index].fillRectShape(this.checkboxes[index]);
+        this.checkboxGraphics[index].setName(index);
     }
     uncheckBox(box, index){
         this.checkboxGraphics[index].clear();

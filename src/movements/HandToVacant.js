@@ -13,7 +13,7 @@ export class HandToVacant extends Movement{
         
         const sourceContainer = this.sourceContainer;
         const targetContainer = this.targetContainer;
-        
+        if(!sourceContainer.length) return;
         this.card = sourceContainer.list[sourceContainer.length-1];
         
         this.targetY = targetContainer.y - sourceContainer.y;

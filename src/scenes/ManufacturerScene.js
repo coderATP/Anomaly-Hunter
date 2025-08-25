@@ -18,7 +18,7 @@ export class ManufacturerScene extends BaseScene{
         this.load.font('myOtherFont', "fonts/Planes_ValMore.ttf", "truetype");
         this.load.font('myOtherOtherFont', "fonts/videotype.otf", "opentype");
 
-        this.load.audio("pop_up", "sounds/pop_up.ogg");
+        this.load.audio("pop_up", "sounds/pop_up.mp3");
     }
     create(){
         this.logo = this.add.image(0,0,"my_brand_logo").setOrigin(0).setScale(2);

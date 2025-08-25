@@ -19,6 +19,9 @@ import { GameplayUI } from "../ui/GameplayUI.js";
 import { RegularCardTextbox } from "../entities/textboxes/RegularCardTextbox.js";
 import { AnomalyTextbox } from "../entities/textboxes/AnomalyTextbox.js";
 
+//states
+import { ResolveState, RecallState, DiscardState, SwapState, EndState} from "../states/gameplayButtons/ButtonStates.js";
+
 
 export class PlayScene extends BaseScene{
     constructor(config){
@@ -158,11 +161,14 @@ export class PlayScene extends BaseScene{
     
     resolveAnomaly(){
         this.gameplayUI.resolveBtn.hitArea.on('pointerdown', ()=>{
+            //enter resolve button state
+            new ResolveState(this).enter();
             const {hand} = this.gameplayUI;
             hand.containers.forEach((container, i)=>{
                 if(container.length){
                     container.list.forEach(card=>{
                         card.on("pointerdown", ()=>{
+                            if(!this.gameplayUI.resolveBtn.active) return; 
                             const command = new HandToDiscard(this, container);
                             this.commandHandler.execute(command);
                         })
@@ -171,13 +177,41 @@ export class PlayScene extends BaseScene{
             })
         })
     }
-    recallMovement(){
-        
+    recallLastAction(){
+        this.gameplayUI.recallBtn.hitArea.on('pointerdown', ()=>{
+            //enter recall button state
+            new RecallState(this).enter();
+        })
+    }
+    swapWithDeck(){
+        this.gameplayUI.swapBtn.hitArea.on('pointerdown', ()=>{
+            //enter swap button state
+            new SwapState(this).enter();
+        })
+    }
+    discardAHand(){
+        this.gameplayUI.discardBtn.hitArea.on('pointerdown', ()=>{
+            //enter diacard button state
+            new DiscardState(this).enter();
+        })
+    }
+    endTurn(){
+        this.gameplayUI.endBtn.hitArea.on('pointerdown', ()=>{
+            //enter resolve button state
+            new EndState(this).enter();
+        })
     }
     handleClickEvent(){
         //hand card clicked
         const { hand } = this.gameplayUI;
-        this.resolveAnomaly()
+        //enter states for each of the five buttons
+        //Resolve, Recall, Discard, Swap and End
+        this.resolveAnomaly();
+        this.recallLastAction();
+        this.discardAHand();
+        this.swapWithDeck();
+        this.endTurn();
+        
         this.input.on("pointerdown", (pointer, gameobject)=>{
             if(!gameobject[0]) return;
             //I'm tapping on a card image
@@ -191,7 +225,13 @@ export class PlayScene extends BaseScene{
                         //only display it after 50 milliseconds
                         //if drag function needs to kick in, it will have done so before 50 ms 
                     case "hand":{
-                        setTimeout(()=>{ this.regularCardTextbox.show(card) }, 50)
+                        //display if none of the gameplay buttons is in active state
+                        let numberOfActiveButtons = 0;
+                        this.gameplayUI.gameplayButtons.forEach(btn=>{
+                            if(btn.active) numberOfActiveButtons++;
+                        })
+                        if(numberOfActiveButtons === 0)
+                            setTimeout(()=>{ this.regularCardTextbox.show(card) }, 50) 
                     break;
                     }
                     case "anomaly":{
@@ -209,19 +249,12 @@ export class PlayScene extends BaseScene{
                     default:{ break; }
                 }
             }
-            else{ console.log("not an image")}
+            else{ console.log("you're clicking on a " + gameobject[0].type + " gameobject")}
         })
         return this;
     }
     
-    onGameplayButtonPressed(btn){
-        btn.hitArea.disableInteractive();
-        btn.enterInactiveState();
-    }
-    onPlayersTurn(btn){
-        btn.hitArea.setInteractive();
-        btn.enterRestState();
-    }
+
     processEvents(){
         const { GameCompleteScene, PauseScene, TutorialScene } = this.game.scene.keys;
         //flags
@@ -274,76 +307,7 @@ export class PlayScene extends BaseScene{
         tempDeck = [];
         return array;
     }
-
-    endTurn(){
-        this.lastAction = "end";
-        this.textDisplayTimer = 0;
-        this.ui.gameplayText.innerText = "turn ended";
-        this.computerExecuting = true;
-        if(!this.computerExecuting) return;
-        const command = new ComputerMovement(this);
-        this.commandHandler.execute(command);
-        this.computerExecuting = false; //stop executing
-        //disable all gameplay buttons, to indicate it's no longer player's turn
-        this.gameplayUI.gameplayButtons.forEach(btn=>{
-            this.onGameplayButtonPressed(btn);
-        })
-    }
-    undoMove(event){
-        this.lastAction = "undo";
-        this.textDisplayTimer = 0;
-        this.ui.gameplayText.innerText = ("undoing last action"); 
-    }
-    redoMove(event){
-        this.lastAction = "redo";
-        this.textDisplayTimer = 0;
-        this.ui.gameplayText.innerText = ("redoing last action"); 
-    }
     
-    listenToGameplayEvents(){
-        //last action
-        this.lastAction = "";
-        //flags
-        this.swapping = false; this.dealing = false; this.computerExecuting = false;
-        this.preloadScene.audio.play(this.preloadScene.audio.popUpSound);
-        //add event listeners to each button
-        //some multiple events, others one-time
-        //this.gameplayUI.swapBtn.hitArea.on("pointerdown", this.swapCard, this);
-        //this.gameplayUI.dealBtn.hitArea.on("pointerdown", this.dealCard, this);
-        //this.gameplayUI.endBtn.hitArea.once("pointerdown", this.endTurn, this);
-       // this.gameplayUI.undoBtn.hitArea.on("pointerdown", this.undoMove, this);
-        //this.gameplayUI.redoBtn.hitArea.on("pointerdown", this.redoMove, this);
-    }
-    swapPlayerTopCard(){
-        const foundationCardsArray = this.elewenjewe.table.foundationPile.container.list;
-        const playerCardsArray = this.elewenjewe.table.playerPile.container.list;
-        let foundationTopmostCard = foundationCardsArray[foundationCardsArray.length-1];
-        let playerTopmostCard = playerCardsArray[0]; 
-        let cardToSwap;
-        
-        if(!foundationCardsArray.length || !playerCardsArray.length) return;
-        for(let i = playerCardsArray.length-1; i >= 0; --i){
-            const playerCard = playerCardsArray[i];
-            if(foundationTopmostCard.getData("suit") === playerCard.getData("suit")){
-                cardToSwap = playerCard;
-                break;
-            }
-        }
-        if(cardToSwap){
-            this.elewenjewe.table.playerPile.container.bringToTop(cardToSwap);
-            playerCardsArray.forEach((card, i)=>{
-                card.setPosition(-i*0.5, -i*0.5)
-                card.setData({x: card.x, y: card.y})
-                card.setFrame(card.getData("frame"))
-            })
-        }
-        return cardToSwap;
-    }
-    
-    sortPile(array){
-        array.sort((a, b)=> a.getData("value") - b.getData("value"))
-    }
-   
     getCardDimensions(){
         let card = this.createCard("null", 0,0);
         const originalWidth = card.displayWidth;
@@ -360,8 +324,6 @@ export class PlayScene extends BaseScene{
         this.graphics = this.add.graphics({lineStyle:  {width: 1, color: "0xffffff"} }) 
         //ui
         this.gameplayUI = new GameplayUI(this,0,0);
-        
-        this.listenToGameplayEvents();
 
         //watch
         this.watch = new Time(this);
@@ -396,51 +358,7 @@ export class PlayScene extends BaseScene{
             this.commandHandler.execute(otherCommand); 
         }, 3500)
     }
-    //HELPER FUNCTION
-    moveAlongSpline(scene, image, points, duration = 3000) {
-        //set image origin to center
-        image.setOrigin(0.5)
-        // Create a spline from 4 points
-        const curve = new Phaser.Curves.Spline(points);
-    
-        // Param object for tweening t from 0 -> 1
-        let t = { value: 0 };
-    
-        scene.tweens.add({
-            targets: t,
-            value: 1,
-            duration: duration,
-            ease: 'Linear',
-            onUpdate: () => {
-                // Get position at t
-                const p = curve.getPoint(t.value);
-                image.setPosition(p.x, p.y);
-    
-                // Get tangent (direction vector)
-                const tangent = curve.getTangent(t.value);
-    
-                // Calculate angle in radians -> convert to degrees
-                const angle = Phaser.Math.RadToDeg(
-                    Phaser.Math.Angle.Between(0, 0, tangent.x, tangent.y)
-                );
-    
-              //  image.setAngle(angle);
-            },
-            onComplete: ()=>{
-                scene.tweens.add({
-                    targets: image,
-                   // rotation: 0,
-                    duration: 150,
-                })
-                image.setPosition(
-                    points[points.length-2],
-                    points[points.length-1]
-                )
-            }
-        });
-    
-        return curve; // optional, useful if you want to debug draw the curve
-    }
+
     update(time, delta){
         this.regularCardTextbox.displayCardInfo(delta);
         this.anomalyTextbox.displayCardInfo(delta);

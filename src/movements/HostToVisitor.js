@@ -9,6 +9,7 @@ export class HostToVisitor extends Movement{
     }
     
     execute(){
+        this.preloadScene.audio.play(this.preloadScene.audio.swapSound); 
         const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
         
         const sourceContainer = this.sourceContainer;

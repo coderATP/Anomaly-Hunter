@@ -22,11 +22,16 @@ export class PreloadScene extends BaseScene{
             ['clockTickSound', "sounds/clock.ogg"], 
             ['playSong', "sounds/new_game.ogg"],
             ['drawSound', "sounds/draw.wav"],
-            ['playerWinSound', "sounds/player_win.ogg"],
-            ['opponentWinSound', "sounds/opponent_win.wav"],
-            ['gameCompleteSound', "sounds/game_complete.wav"],
-            ['buttonClickSound', "sounds/button_sound.wav"],
-            ['popUpSound', "sounds/pop_up.ogg"],
+            ['playerWinSound', "sounds/win_turn.mp3"],
+            ['gameCompleteSound', "sounds/win_turn.mp3"],
+            ['buttonClickSound', "sounds/click.mp3"],
+            ['popUpSound', "sounds/pop_up.mp3"],
+            ['shuffleSound', "sounds/card_shuffle.mp3"],
+            ['swooshSound', "sounds/card_swooshing.wav"],
+            ['swapSound', "sounds/card_swap.mp3"],
+            ['solveObjectiveSound', "sounds/solve_objective.wav"],
+ 
+
         ]
         this.load.audio(...audioFiles[audioFileIndex]);
         this.load.on("filecomplete", ()=>{

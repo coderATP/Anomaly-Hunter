@@ -11,6 +11,9 @@ export class GameplayUI {
         this.scene = scene;
         this.config = scene.config;
         
+        const { PreloadScene } = scene.game.scene.keys;
+        this.preloadScene = PreloadScene;
+        
         this.marginX = this.config.width*0.025;
         
         //PILES INSTANTIATION
@@ -24,7 +27,7 @@ export class GameplayUI {
         this.createHand(this.hand);
         
         this.middleSection = new Phaser.Geom.Rectangle(this.leftSection.right, 0, this.config.width*0.6, this.config.height);
-        //this.setBackgroundColor(this.middleSection, 0x000000, 0x0000ff, 1);
+        this.setBackgroundColor(this.middleSection, 0x628410, 0x0000ff, 1);
        
         const remainingSpace = this.config.width - this.middleSection.right;
         this.rightSection = new Phaser.Geom.Rectangle(this.middleSection.right, 0, remainingSpace, this.config.height);
@@ -117,7 +120,7 @@ export class GameplayUI {
         //calculate height of 1 button
         const marginY = 40;
         const paddingY = 25;
-        const numberOfButtons = 6;
+        const numberOfButtons = 5;
         const totalHeight = this.config.height;
         const totalAvailableHeight = totalHeight - marginY*2 - paddingY*(numberOfButtons-1);
         const buttonHeight = totalAvailableHeight/numberOfButtons;
@@ -126,29 +129,22 @@ export class GameplayUI {
         const marginX = 2.5;
         const buttonWidth = totalWidth - marginX*2;
         //create buttons
-        this.gameplayButtons = [];
+        this.gameplayButtonRects = [];
         for(let i = 0; i < numberOfButtons; ++i){
             const rect = new Phaser.Geom.Rectangle(marginX, marginY + (i*(buttonHeight+paddingY)), buttonWidth, buttonHeight);
-            const btn = new Button(this.scene, rect, "Deal");
-            this.gameplayButtons.push(btn);
+            this.gameplayButtonRects.push(rect);
         }
-        //set text
-        this.gameplayButtons[0].label.setText("Resolve");
-        this.gameplayButtons[1].label.setText("Recall");
-        this.gameplayButtons[2].label.setText("Discard");
-        this.gameplayButtons[3].label.setText("Undo");
-        this.gameplayButtons[4].label.setText("Redo");
-        this.gameplayButtons[5].label.setText("End");
+
         //set reference
-        this.resolveBtn = this.gameplayButtons[0];
-        this.recallBtn = this.gameplayButtons[1];
-        this.discardBtn = this.gameplayButtons[2];
-        this.undoBtn = this.gameplayButtons[3];
-        this.redoBtn = this.gameplayButtons[4];
-        this.endBttn = this.gameplayButtons[5];
+        this.resolveBtn = new Button(this.scene, this.gameplayButtonRects[0], "Resolve");
+        this.recallBtn = new Button(this.scene, this.gameplayButtonRects[1], "Recall");
+        this.discardBtn = new Button(this.scene, this.gameplayButtonRects[2], "Discard");
+        this.swapBtn = new Button(this.scene, this.gameplayButtonRects[3], "Swap");
+        this.endBtn = new Button(this.scene, this.gameplayButtonRects[4], "End");
+        this.gameplayButtons = [this.resolveBtn, this.recallBtn, this.discardBtn, this.swapBtn, this.endBtn];
 
         //adjust position
-        this.gameplayButtons.forEach(btn=>{
+        this.gameplayButtons.forEach((btn, i)=>{
             btn.label.setFontFamily("myOtherFont");
             btn.label.setPosition(btn.rect.centerX - btn.label.width/2, btn.rect.centerY - btn.label.height/2);
         })

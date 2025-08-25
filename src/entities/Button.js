@@ -2,9 +2,14 @@ export class Button {
     constructor(scene, rect, text) {
         this.rect = rect;
         this.scene = scene;
+        this.id = text;
+        const { PreloadScene } = this.scene.game.scene.keys;
+        this.preloadScene = PreloadScene;
+        
         this.config = scene.config;
         this.graphics = scene.add.graphics().setDepth(0);
         this.currentFontSize = 1;
+        this.active = false;
         //background color
         this.setBackgroundColor(rect, 0x22aa22, 0x000000, 1, 4);
         //label (text)
@@ -23,7 +28,7 @@ export class Button {
             .setDepth(0).setOrigin(0).setInteractive()
             .on("pointerdown", this.enterActiveState, this)
             .on("pointerover", this.enterHoverState, this)
-            .on("pointerout", this.enterRestState, this)
+            .on("pointerup", this.enterRestState, this)
     }
     
     setBackgroundColor(rect, fillColor, borderColor, alpha=1, radius=4, lineWidth){
@@ -63,27 +68,28 @@ export class Button {
             8); 
     }
     enterHoverState() {
-        const fillColor = 0xff0000;
-        const strokeColor = 0x004085;
+        const fillColor = 0xaa0000;
+        const strokeColor = 0xaa0000;
         this.changeBG(fillColor, strokeColor);
     }
 
     enterRestState() {
-        const fillColor = 0x22aa22;
-        const strokeColor = 0x0056b3;
-        setTimeout(()=>{ this.changeBG(fillColor) }, 300)
+        if(!this.active){
+            const fillColor = 0x22aa22;
+            const strokeColor = 0x0056b3;
+            setTimeout(()=>{ this.changeBG(fillColor) }, 50) 
+        } 
     }
     enterActiveState() {
-        const fillColor = 0x00aa00;
-        const strokeColor = 0x00aa00;
-        this.changeBG(fillColor, strokeColor); 
+        this.toggleActive();
+        const fillColor = 0xaa0000;
+        const strokeColor = 0xaa0000;
+        this.changeBG(fillColor, strokeColor);
+        this.preloadScene.audio.play(this.preloadScene.audio.buttonClickSound);
     }
-    enterInactiveState() {
-        const fillColor = 0x202020;
-        const strokeColor = 0x004085;
-        this.changeBG(fillColor);
+    toggleActive(){
+        this.active = !this.active;
     }
-    
     updateFontSize(time, delta){
         if(this.label.width < (this.rect.width*0.8) ){
             this.currentFontSize++;
