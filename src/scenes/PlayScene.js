@@ -18,7 +18,6 @@ import { GameplayUI } from "../ui/GameplayUI.js";
 //text boxes
 import { RegularCardTextbox } from "../entities/textboxes/RegularCardTextbox.js";
 import { AnomalyTextbox } from "../entities/textboxes/AnomalyTextbox.js";
-
 //states
 import { ResolveState, RecallState, DiscardState, SwapState, EndState} from "../states/gameplayButtons/ButtonStates.js";
 
@@ -160,7 +159,10 @@ export class PlayScene extends BaseScene{
     }
     
     resolveAnomaly(){
+        
         this.gameplayUI.resolveBtn.hitArea.on('pointerdown', ()=>{
+            this.resolving = false;
+            if(this.resolving) return;
             //enter resolve button state
             new ResolveState(this).enter();
             const {hand} = this.gameplayUI;
@@ -175,32 +177,46 @@ export class PlayScene extends BaseScene{
                     })
                 }
             })
+            this.resolving = true;
         })
     }
     recallLastAction(){
         this.gameplayUI.recallBtn.hitArea.on('pointerdown', ()=>{
+            this.recalling = false;
+            if(this.recalling) return;
             //enter recall button state
             new RecallState(this).enter();
+            this.recalling = true;
         })
     }
     swapWithDeck(){
         this.gameplayUI.swapBtn.hitArea.on('pointerdown', ()=>{
+            this.swapping = false;
+            if(this.swapping) return;
             //enter swap button state
             new SwapState(this).enter();
+            this.swapping = true;
         })
     }
     discardAHand(){
         this.gameplayUI.discardBtn.hitArea.on('pointerdown', ()=>{
+            this.discarding = false;
+            if(this.discarding) return;
             //enter diacard button state
             new DiscardState(this).enter();
+            this.discarding = true;
         })
     }
     endTurn(){
         this.gameplayUI.endBtn.hitArea.on('pointerdown', ()=>{
+            this.ending = false;
+            if(this.ending) return;
             //enter resolve button state
             new EndState(this).enter();
+            this.ending = true;
         })
     }
+    
     handleClickEvent(){
         //hand card clicked
         const { hand } = this.gameplayUI;
@@ -211,7 +227,7 @@ export class PlayScene extends BaseScene{
         this.discardAHand();
         this.swapWithDeck();
         this.endTurn();
-        
+        //turn ended message buttons (back and next)
         this.input.on("pointerdown", (pointer, gameobject)=>{
             if(!gameobject[0]) return;
             //I'm tapping on a card image
@@ -239,11 +255,11 @@ export class PlayScene extends BaseScene{
                     break;
                     }
                     case "deck":{
-                        alert("deck");
+                      //  alert("deck");
                     break;
                     }
                     case "discard":{
-                        alert("discard")
+                      //  alert("discard")
                     break;
                     }
                     default:{ break; }
@@ -346,6 +362,7 @@ export class PlayScene extends BaseScene{
         //display Round 1
         this.gameplayUI.createNewTurnMessage(1);
         //remove message after 2 sec
+        //
         //and send anomaly card down from outworld
         setTimeout(()=>{
             this.gameplayUI.hideMessage();

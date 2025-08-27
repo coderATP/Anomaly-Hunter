@@ -27,11 +27,11 @@ export class GameplayUI {
         this.createHand(this.hand);
         
         this.middleSection = new Phaser.Geom.Rectangle(this.leftSection.right, 0, this.config.width*0.6, this.config.height);
-        this.setBackgroundColor(this.middleSection, 0x628410, 0x0000ff, 1);
+        //this.setBackgroundColor(this.middleSection, 0x628410, 0x0000ff, 1);
        
         const remainingSpace = this.config.width - this.middleSection.right;
         this.rightSection = new Phaser.Geom.Rectangle(this.middleSection.right, 0, remainingSpace, this.config.height);
-        this.setBackgroundColor(this.rightSection, 0x000000, 0x0000ff, 1);
+       // this.setBackgroundColor(this.rightSection, 0x000000, 0x0000ff, 1);
         
         this.createDeck(this.deck);
         this.createDiscard(this.discard);
@@ -98,7 +98,7 @@ export class GameplayUI {
         //calculate width of button
         const totalWidth = this.rightSection.width;
         const marginX = 5;
-        const maxWidth = totalWidth - marginX*2;        
+        const maxWidth = totalWidth - marginX*2;     
         //texts
         this.displayHeaders = [];
         this.displayRects = [];
@@ -212,7 +212,7 @@ export class GameplayUI {
 
         const totalOccupiedWidth = marginX*2 + handWidth*cols + paddingX*(cols-1);
         this.leftSection = new Phaser.Geom.Rectangle(this.config.width*0.1, 0, totalOccupiedWidth, this.config.height);
-        this.setBackgroundColor(this.leftSection, 0x000000, 0x0000ff, 1);
+        //this.setBackgroundColor(this.leftSection, 0x000000, 0x0000ff, 1);
 
         let handX, handY;
         for(let i = 0; i < cols; ++i){
@@ -225,19 +225,6 @@ export class GameplayUI {
 
     }
     
-    onOrientationChange(){
-        if(!screen.orientation) return;
-        screen.orientation.addEventListener("change",()=>{
-            if(screen.orientation.type.startsWith("portrait")){
-               
-            }
-            else if(screen.orientation.type.startsWith("landscape")){
-                this.leftSection = new Phaser.Geom.Rectangle(0,0,this.config.width*0.25, this.config.height);
-                this.rightSection = new Phaser.Geom.Rectangle(this.leftSection.right, 0,this.config.width*0.75, this.config.height);
-            }
-        })
-    }
-    
     update(time, delta){
         //update the font size of the button with longest word
         this.discardBtn&& this.discardBtn.updateFontSize(time, delta);
@@ -245,6 +232,7 @@ export class GameplayUI {
             btn.label.setFontSize(this.discardBtn.currentFontSize);
             btn.label.setPosition(btn.rect.centerX - btn.label.width/2, btn.rect.centerY - btn.label.height/2);
         })
+        
     }
     createNewTurnMessage(turn){
         this.turn = turn;

@@ -8,6 +8,9 @@ import { GameCompleteScene } from "./src/scenes/GameCompleteScene.js";
 import { OptionsScene } from "./src/scenes/OptionsScene.js";
 import { CreditsScene } from "./src/scenes/CreditsScene.js";
 import { TutorialScene} from "./src/scenes/TutorialScene.js";
+import { TurnEndedScene} from "./src/scenes/TurnEndedScene.js";
+import { GoToNextAnomalyScene } from "./src/scenes/GoToNextAnomalyScene.js";
+
 
 window.addEventListener("load", ()=>{
     const GAME_WIDTH = screen.width*devicePixelRatio;
@@ -66,7 +69,9 @@ window.addEventListener("load", ()=>{
             new GameCompleteScene(SHARED_CONFIG),
             new OptionsScene(SHARED_CONFIG),
             new CreditsScene(SHARED_CONFIG),
-            new TutorialScene(SHARED_CONFIG)
+            new TutorialScene(SHARED_CONFIG),
+            new TurnEndedScene(SHARED_CONFIG),
+            new GoToNextAnomalyScene(SHARED_CONFIG)
         ],
     };
     

@@ -20,9 +20,10 @@ export class AudioControl{
         this.songs = [ /*this.menuSong, this.playSong */];
         this.sounds = [this.drawSound, this.shuffleSound, this.swooshSound, this.swapSound, this.popUpSound, this.solveObjectiveSound, this.gameCompleteSound, this.playerWinSound, this.buttonClickSound, this.clockTickSound, this.errorSound];
         //REDUCE VOLUME AT STARTUP, UNLESS OTHERWISE SPECIFIED BY USER
-        //this.playSong.volume = 1;
-        this.clockTickSound.volume = 0.2;
+        this.playSong.volume = 0.4;
+        this.clockTickSound.volume = 0.3;
         this.buttonClickSound.volume = 0.2;
+        this.solveObjectiveSound.volume = 0.2;
     }
     
     play(audio){
