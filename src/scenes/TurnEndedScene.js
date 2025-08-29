@@ -3,7 +3,9 @@ import { BaseScene } from "./BaseScene.js";
 import { eventEmitter } from "../events/EventEmitter.js";
 //messages
 import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedMessage.js";
-    
+//states
+import { TurnEndedState } from "../states/TurnEndedState.js";
+
 export class TurnEndedScene extends BaseScene{
     constructor(config){
         super("TurnEndedScene", config);

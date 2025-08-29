@@ -92,8 +92,8 @@ export class GameplayUI {
         //three sections, equal sizes
         //set parameters
         //calculate height of 1 section
-        const marginY = 40;
-        const paddingY = 25;
+        const marginY = 300;
+        const paddingY = 50;
         const numberOfSections = 3;
         const totalHeight = this.config.height;
         const totalAvailableHeight = totalHeight - marginY*2 - paddingY*(numberOfSections-1);
@@ -110,11 +110,32 @@ export class GameplayUI {
             const rect = new Phaser.Geom.Rectangle(this.rightSection.left+marginX, marginY + (i*(sectionHeight+paddingY)), maxWidth, sectionHeight);
             this.setRoundedBackgroundColor(rect, 0x22aa22, 0x0000ff, 0.8);
             //add headers
-            const header = this.scene.add.text(rect.left+marginX, rect.top, "Section "+(i+1), {fontSize: "40px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
+            const header = this.scene.add.text(rect.left+marginX, rect.top, "SP", {fontSize: "40px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
+            const text = this.scene.add.text(rect.left+marginX, rect.top, "0", {fontSize: "40px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
+    
             this.displayRects.push(rect);
             this.displayHeaders.push(header);
-            
+            this.displayTexts.push(text);
         }
+        //rects
+        this.SPRect = this.displayRects[0];
+        this.RPRect = this.displayRects[1];
+        this.DPRect = this.displayRects[2];
+        //set headers
+        this.SPHeader = this.displayHeaders[0];
+        this.RPHeader = this.displayHeaders[1];
+        this.DPHeader = this.displayHeaders[2];
+        this.RPHeader.setText("RP");
+        this.DPHeader.setText("DP");
+        this.displayHeaders.forEach(header=>{ header.setPosition(this.rightSection.centerX - header.width/2, header.y+10); })
+        //texts
+        this.SPText = this.displayTexts[0];
+        this.RPText = this.displayTexts[1];
+        this.DPText = this.displayTexts[2];
+        this.SPText.setText(2);
+        this.DPText.setText(3);
+        this.displayTexts.forEach((text, i)=>{ text.setPosition(this.displayRects[i].centerX - text.width/2, this.displayRects[i].bottom - text.displayHeight - 10) })
+        
     }
     //BUTTONS
     createButtons(){

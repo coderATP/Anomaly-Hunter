@@ -1,9 +1,9 @@
 import { Movement } from "./Movement.js";
 
-export class MultipleDeckToHand extends Movement{
+export class DeckToHand extends Movement{
     constructor(scene, numberOfCardsToDeal = 5){
         super(scene);
-        this.id = "multipleDeckToHand";
+        this.id = "deckToHand";
         this.movementCount = 0;
         this.numberOfCardsToDeal = numberOfCardsToDeal;
         this.timeout = 200 * numberOfCardsToDeal;

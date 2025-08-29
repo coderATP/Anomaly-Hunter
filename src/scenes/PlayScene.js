@@ -2,8 +2,7 @@ import { BaseScene } from "./BaseScene.js";
 //command handler for card movements
 import { CommandHandler } from "../CommandHandler.js";
 //movements
-import { SingleDeckToHand } from "../movements/SingleDeckToHand.js";
-import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
+import { DeckToHand } from "../movements/DeckToHand.js";
 import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { HandToVacant } from "../movements/HandToVacant.js";
 import { VisitorToHost } from "../movements/VisitorToHost.js";
@@ -20,6 +19,7 @@ import { RegularCardTextbox } from "../entities/textboxes/RegularCardTextbox.js"
 import { AnomalyTextbox } from "../entities/textboxes/AnomalyTextbox.js";
 //states
 import { ResolveState, RecallState, DiscardState, SwapState, EndState} from "../states/gameplayButtons/ButtonStates.js";
+import { DeckClickState } from "../states/DeckClickState.js";
 
 
 export class PlayScene extends BaseScene{
@@ -159,7 +159,6 @@ export class PlayScene extends BaseScene{
     }
     
     resolveAnomaly(){
-        
         this.gameplayUI.resolveBtn.hitArea.on('pointerdown', ()=>{
             this.resolving = false;
             if(this.resolving) return;
@@ -188,6 +187,9 @@ export class PlayScene extends BaseScene{
             new RecallState(this).enter();
             this.recalling = true;
         })
+    }
+    dealFromDeck(){
+        
     }
     swapWithDeck(){
         this.gameplayUI.swapBtn.hitArea.on('pointerdown', ()=>{
@@ -255,7 +257,9 @@ export class PlayScene extends BaseScene{
                     break;
                     }
                     case "deck":{
-                      //  alert("deck");
+                        new DeckClickState(this).enter();
+                        this.drawACardFromDeck()
+                            .then(value=>{ this.reduceDP() })
                     break;
                     }
                     case "discard":{
@@ -268,8 +272,57 @@ export class PlayScene extends BaseScene{
             else{ console.log("you're clicking on a " + gameobject[0].type + " gameobject")}
         })
         return this;
+        
     }
-    
+    //STEPS involved in drawing card from deck
+    //step 1: pick a card
+    drawACardFromDeck(){
+        const { DPText, hand } = this.gameplayUI;
+        
+        return new Promise((resolve, reject) => {
+            const newPoints = parseInt(DPText.text);
+            let targetContainer;
+            
+            for(let i = 0; i < hand.containers.length; ++i){
+                const container = hand.containers[i];
+                if(!container.length){
+                    targetContainer = hand.containers[i];
+                    break;
+                }
+            }
+            if(!targetContainer && newPoints < 1) reject("No empty containers AND you do not have enough Draw Points");
+            else if(newPoints < 1) reject("You do not have enough Draw Points");
+            else if(!targetContainer) reject("You do not have an empty Hand");
+            else{
+                const command = new DeckToHand(this, 1);
+                resolve( this.commandHandler.execute(command) );
+                resolve( this.preloadScene.audio.drawSound.play() );
+            }
+                
+        })
+      
+    }
+    //reduce draw points by 1
+    reduceDP(){
+        const { DPText, DPRect, hand} = this.gameplayUI;
+       
+        //if there's no vacant container to deal into, return early
+        //if there are no draw points available to player, return early
+            //console.log(targetContainer, newPoints)
+        return new Promise((resolve, reject)=>{
+            
+            setTimeout(()=>{
+                let newPoints = parseInt(DPText.text) - 1;
+                if(newPoints < 0){
+                    reject("You do not have enough DPs");
+                }
+                else{
+                    resolve( DPText.setText(newPoints) );
+                    resolve( DPText.setPosition(DPRect.centerX - DPText.displayWidth/2, DPRect.bottom - DPText.height - 10) );
+                }
+            }, 30)
+        })
+    }
 
     processEvents(){
         const { GameCompleteScene, PauseScene, TutorialScene } = this.game.scene.keys;
@@ -311,7 +364,7 @@ export class PlayScene extends BaseScene{
             this.watch.canPlayTickSound = !this.watch.canPlayTickSound;
         });
     }
-     
+    //old school array shufling method 
     shuffle(array){
         let tempDeck = [];
         while(array.length){
@@ -323,7 +376,6 @@ export class PlayScene extends BaseScene{
         tempDeck = [];
         return array;
     }
-    
     getCardDimensions(){
         let card = this.createCard("null", 0,0);
         const originalWidth = card.displayWidth;
@@ -356,7 +408,7 @@ export class PlayScene extends BaseScene{
         return new Promise((resolve, reject) => {
             //send cards to Hand afterward
             setTimeout(()=>{
-                const command = new MultipleDeckToHand(this);
+                const command = new DeckToHand(this, 5);
                 this.commandHandler.execute(command); 
             }, 2000)
         })
@@ -364,8 +416,7 @@ export class PlayScene extends BaseScene{
     beginFirstRound(){
         this.showNewTurnMessage()
             .then(value=> { return this.sendAnomalyCardFromOutworld() })
-            .then(value=>{ return this.sendCardsToHand() })   
-        
+            .then(value=>{ return this.sendCardsToHand() })    
     }
 
     create(){

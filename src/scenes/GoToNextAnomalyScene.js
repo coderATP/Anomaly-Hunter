@@ -7,7 +7,7 @@ import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedM
 import { AnomalyToResolved } from "../movements/AnomalyToResolved.js";
 import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { MultipleHandToDeck } from "../movements/MultipleHandToDeck.js";
-import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
+import { DeckToHand } from "../movements/DeckToHand.js";
 
 export class GoToNextAnomalyScene extends BaseScene{
     constructor(config){
@@ -44,7 +44,9 @@ export class GoToNextAnomalyScene extends BaseScene{
             if(!this.recycling) return;
             //hide message, recycle remaining cards left in hand and then carry out the remaining tasks
             this.hideMessageAndResumePlayScene()
+                .then(value=> { return this.getDPReward() } )
                 .then(value=>{ return this.recycleRemainingCards() })
+                .then(value=>{ return this.getRPReward() })
                 .then(value=>{ return this.carryOutOtherTasks() })
             //get rewarded
             this.recycling = false;
@@ -55,6 +57,7 @@ export class GoToNextAnomalyScene extends BaseScene{
             if(!this.retaining) return;
             //hide message and carry out the remaining tasks
             this.hideMessageAndResumePlayScene()
+                .then(value=>{ return this.getDPReward() })
                 .then(value=>{ return this.carryOutOtherTasks() })
             this.retaining = false;
         })
@@ -96,6 +99,30 @@ export class GoToNextAnomalyScene extends BaseScene{
         })
     }
     //STEP 3: 
+    //get rewarded with x RP and 3 DP
+    //where x = number of cards recycled
+    getDPReward(){
+        const { DPText, DPRect} = this.playScene.gameplayUI;
+        const newPoints = parseInt(DPText.text) + 3;
+
+        return new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                resolve( DPText.setText(newPoints) );
+                resolve( DPText.setPosition(DPRect.centerX - DPText.displayWidth/2, DPRect.bottom - DPText.height - 10) );
+            }, 500)
+        })
+    }
+    getRPReward(){
+        const { RPText, RPRect} = this.playScene.gameplayUI;
+        const newPoints = parseInt(RPText.text) + this.numberOfOccupiedContainers;
+        return new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                resolve( RPText.setText(newPoints) );
+                resolve( RPText.setPosition(RPRect.centerX - RPText.displayWidth/2, RPRect.bottom - RPText.height - 10) );
+            }, 500)
+        })
+    }
+    //STEP 3: 
     // send resolved anomaly to resolved pile
     castResolvedAnomalyOut(){
         return new Promise((resolve, reject)=>{
@@ -127,14 +154,13 @@ export class GoToNextAnomalyScene extends BaseScene{
         })
     }
     //STEP 6:
-    //send cards to anomaly
+    //send cards to hand
     sendCardsToHand(){
         return new Promise((resolve, reject)=>{
             let num = this.numberOfOccupiedContainers;
             const numberOfCardsToDeal = 5 - num;
-            console.log(numberOfCardsToDeal)
             setTimeout(()=>{ 
-                const command = new MultipleDeckToHand(this.playScene, numberOfCardsToDeal);
+                const command = new DeckToHand(this.playScene, numberOfCardsToDeal);
                 resolve( this.playScene.commandHandler.execute(command) )
             }, 1200);
         })
