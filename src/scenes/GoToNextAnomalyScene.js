@@ -3,13 +3,19 @@ import { BaseScene } from "./BaseScene.js";
 import { eventEmitter } from "../events/EventEmitter.js";
 //messages
 import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedMessage.js";
-    
+//Movements
+import { AnomalyToResolved } from "../movements/AnomalyToResolved.js";
+import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
+import { MultipleHandToDeck } from "../movements/MultipleHandToDeck.js";
+import { MultipleDeckToHand } from "../movements/MultipleDeckToHand.js";
+
 export class GoToNextAnomalyScene extends BaseScene{
     constructor(config){
         super("GoToNextAnomalyScene", config);
         this.config = config;
         this.turnEndedMode = false;
-   
+        this.recycling = false;
+        this.retaining = false;
     }
     
     destroyEvents(){
@@ -30,6 +36,122 @@ export class GoToNextAnomalyScene extends BaseScene{
             this.goingBackInTime = true;
         })
     }
+    startNextTurn(){
+        const { deck  } = this.playScene.gameplayUI.piles;
+        
+        this.goToNextAnomalyMessage.buttons.recycle.hitArea.once("pointerdown", ()=>{
+            this.recycling = true;
+            if(!this.recycling) return;
+            //hide message, recycle remaining cards left in hand and then carry out the remaining tasks
+            this.hideMessageAndResumePlayScene()
+                .then(value=>{ return this.recycleRemainingCards() })
+                .then(value=>{ return this.carryOutOtherTasks() })
+            //get rewarded
+            this.recycling = false;
+        })
+        
+        this.goToNextAnomalyMessage.buttons.retain.hitArea.once("pointerdown", ()=>{
+            this.retaining = true;
+            if(!this.retaining) return;
+            //hide message and carry out the remaining tasks
+            this.hideMessageAndResumePlayScene()
+                .then(value=>{ return this.carryOutOtherTasks() })
+            this.retaining = false;
+        })
+    }
+    
+    get numberOfOccupiedContainers(){
+        let num = 0;
+        const { hand  } = this.playScene.gameplayUI.piles;
+        for(let i = 0; i < hand.containers.length; ++i){
+            const container = hand.containers[i];
+            if(container.length) num++;
+        }
+        return num;
+    }
+    //STEP 1: hide message
+    hideMessage(){
+        return new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                resolve( this.goToNextAnomalyMessage.hide() );
+            }, 100)
+        })
+    }
+    //STEP 2: resume play scene
+    resumePlayScene(){
+        return new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                resolve( this.scene.resume("PlayScene") ); 
+            }, 10);
+        })
+    }
+     //STEP 2:
+    //recycle cards in hand if user wants so:
+    recycleRemainingCards(){
+        return new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                const command = new MultipleHandToDeck(this.playScene);
+                resolve( this.playScene.commandHandler.execute(command) ); 
+            }, 1000)
+        })
+    }
+    //STEP 3: 
+    // send resolved anomaly to resolved pile
+    castResolvedAnomalyOut(){
+        return new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                const command = new AnomalyToResolved(this.playScene)
+                resolve( this.playScene.commandHandler.execute(command) )
+            }, 1000)
+        })
+    }
+    //STEP 4:
+    //send next anomaly down
+    sendNextAnomalyDown(){
+        return new Promise((resolve, reject)=>{
+            const command = new OutworldToAnomaly(this.playScene);
+            setTimeout(()=>{
+                resolve( this.playScene.commandHandler.execute(command) )
+            }, 500);
+        })
+    }
+    //STEP 5:
+    //shuffle deck
+    shuffleDeck(){
+        return new Promise((resolve, reject)=>{
+            setTimeout(()=>{
+                const { deck } = this.playScene.gameplayUI.piles;
+                resolve( this.preloadScene.audio.shuffleSound.play() );
+                resolve( deck.container.shuffle() );
+            }, 1000)
+        })
+    }
+    //STEP 6:
+    //send cards to anomaly
+    sendCardsToHand(){
+        return new Promise((resolve, reject)=>{
+            let num = this.numberOfOccupiedContainers;
+            const numberOfCardsToDeal = 5 - num;
+            console.log(numberOfCardsToDeal)
+            setTimeout(()=>{ 
+                const command = new MultipleDeckToHand(this.playScene, numberOfCardsToDeal);
+                resolve( this.playScene.commandHandler.execute(command) )
+            }, 1200);
+        })
+    }
+    
+    async hideMessageAndResumePlayScene(){
+        await this.hideMessage();
+        await this.resumePlayScene();
+    }
+
+    async carryOutOtherTasks(){
+        await this.castResolvedAnomalyOut();
+        await this.sendNextAnomalyDown();
+        await this.shuffleDeck();
+        await this.sendCardsToHand();
+    }
+    
     create(){
         const { PreloadScene, PlayScene } = this.game.scene.keys;
         this.preloadScene = PreloadScene;
@@ -39,6 +161,7 @@ export class GoToNextAnomalyScene extends BaseScene{
         this.enter();
         this.initEvents();
         this.goBackInTime();
+        this.startNextTurn();
     }
     
     update(time, delta){
