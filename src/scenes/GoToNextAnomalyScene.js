@@ -1,14 +1,20 @@
 /**@type {import("../typings/phaser")} */
 import { BaseScene } from "./BaseScene.js";
 import { eventEmitter } from "../events/EventEmitter.js";
-//messages
-import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedMessage.js";
+
 //Movements
 import { AnomalyToResolved } from "../movements/AnomalyToResolved.js";
 import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { MultipleHandToDeck } from "../movements/MultipleHandToDeck.js";
 import { DeckToHand } from "../movements/DeckToHand.js";
-
+//messages
+import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedMessage.js";
+//progress messages
+import { Turn1Progress } from "../turns/progress_messages/Turn1Progress.js";
+import { Turn2Progress } from "../turns/progress_messages/Turn2Progress.js";
+import { Turn3Progress } from "../turns/progress_messages/Turn3Progress.js";
+  
+  
 export class GoToNextAnomalyScene extends BaseScene{
     constructor(config){
         super("GoToNextAnomalyScene", config);
@@ -165,7 +171,6 @@ export class GoToNextAnomalyScene extends BaseScene{
             }, 1200);
         })
     }
-    
     async hideMessageAndResumePlayScene(){
         await this.hideMessage();
         await this.resumePlayScene();
@@ -176,14 +181,32 @@ export class GoToNextAnomalyScene extends BaseScene{
         await this.sendNextAnomalyDown();
         await this.shuffleDeck();
         await this.sendCardsToHand();
+        await this.createProgressMessage();
     }
     
+    createProgressMessage(){
+        
+        return new Promise((resolve, reject) => {
+            setTimeout(()=>{
+                const messages = [Turn1Progress, Turn2Progress, Turn3Progress];
+                const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
+                if(turnIndex){
+                   resolve( this.progressMessage = new messages[turnIndex](this.playScene).add() );
+                }
+                else{
+                    reject("No anomaly card in the pile yet");
+                }
+            }, 500)
+        })
+    }
+
     create(){
         const { PreloadScene, PlayScene } = this.game.scene.keys;
         this.preloadScene = PreloadScene;
         this.playScene = PlayScene;
         this.goToNextAnomalyMessage = new GoToNextAnomalyMessage(this);
         this.goToNextAnomalyMessage.show();
+
         this.enter();
         this.initEvents();
         this.goBackInTime();

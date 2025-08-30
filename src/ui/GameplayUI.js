@@ -92,31 +92,36 @@ export class GameplayUI {
         //three sections, equal sizes
         //set parameters
         //calculate height of 1 section
-        const marginY = 300;
-        const paddingY = 50;
+        const marginY = 50;
+        const paddingY = 20;
         const numberOfSections = 3;
         const totalHeight = this.config.height;
-        const totalAvailableHeight = totalHeight - marginY*2 - paddingY*(numberOfSections-1);
-        const sectionHeight = totalAvailableHeight/numberOfSections;
+        const totalAvailableHeight = totalHeight - marginY* - paddingY*(numberOfSections-1);
         //calculate width of button
         const totalWidth = this.rightSection.width;
         const marginX = 5;
-        const maxWidth = totalWidth - marginX*2;     
+        const maxWidth = totalWidth - marginX*2;  
+        const sectionHeight = 0.1*this.config.height;
+
         //texts
         this.displayHeaders = [];
         this.displayRects = [];
         this.displayTexts = [];
         for(let i = 0; i < numberOfSections; ++i){
-            const rect = new Phaser.Geom.Rectangle(this.rightSection.left+marginX, marginY + (i*(sectionHeight+paddingY)), maxWidth, sectionHeight);
+            const x = this.rightSection.left+marginX
+            const y = this.config.height - sectionHeight - (i*sectionHeight) - paddingY  - marginY;
+            const rect = new Phaser.Geom.Rectangle(x, y, maxWidth, sectionHeight);
             this.setRoundedBackgroundColor(rect, 0x22aa22, 0x0000ff, 0.8);
             //add headers
-            const header = this.scene.add.text(rect.left+marginX, rect.top, "SP", {fontSize: "40px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
+            const header = this.scene.add.text(rect.left+marginX, rect.top, "Swap Point", {fontSize: "25px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
             const text = this.scene.add.text(rect.left+marginX, rect.top, "0", {fontSize: "40px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
     
             this.displayRects.push(rect);
             this.displayHeaders.push(header);
             this.displayTexts.push(text);
         }
+       
+
         //rects
         this.SPRect = this.displayRects[0];
         this.RPRect = this.displayRects[1];
@@ -125,8 +130,8 @@ export class GameplayUI {
         this.SPHeader = this.displayHeaders[0];
         this.RPHeader = this.displayHeaders[1];
         this.DPHeader = this.displayHeaders[2];
-        this.RPHeader.setText("RP");
-        this.DPHeader.setText("DP");
+        this.RPHeader.setText("Resource Point");
+        this.DPHeader.setText("Draw Point");
         this.displayHeaders.forEach(header=>{ header.setPosition(this.rightSection.centerX - header.width/2, header.y+10); })
         //texts
         this.SPText = this.displayTexts[0];
@@ -135,7 +140,13 @@ export class GameplayUI {
         this.SPText.setText(2);
         this.DPText.setText(3);
         this.displayTexts.forEach((text, i)=>{ text.setPosition(this.displayRects[i].centerX - text.width/2, this.displayRects[i].bottom - text.displayHeight - 10) })
-        
+        //create progress section for each turn
+        this.turnProgressRect = new Phaser.Geom.Rectangle(this.rightSection.left + marginX, this.rightSection.top + marginY, maxWidth, this.DPRect.top-marginY);
+        this.setRoundedBackgroundColor(this.turnProgressRect, 0x22aa22, 0x0000ff, 0.8);
+        this.turnProgressHeader = this.scene.add.text(this.turnProgressRect.left+marginX, this.turnProgressRect.top, "This Round", {fontSize: "30px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
+        this.turnProgressHeader.appendText("You've Dealt:")
+            .setWordWrapWidth(this.turnProgressRect.width)
+            .setAlign("center")
     }
     //BUTTONS
     createButtons(){
@@ -234,7 +245,7 @@ export class GameplayUI {
         //i want to create four rows and two columns for the cards
         //so that all the rows would fit the whole screen
         const totalHeight = this.config.height;
-        const marginY = 5;
+        const marginY = 80;
         const paddingY = 10;
         const rows = 4;
         const cols = 2;

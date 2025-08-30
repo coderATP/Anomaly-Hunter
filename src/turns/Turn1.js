@@ -1,6 +1,7 @@
 import {Turn } from "./Turn.js";
 
 export class Turn1 extends Turn{
+    
     solveObjectivesWith(card){
         if(card.getData("title")=== this.CARD_TITLES.PAST_CARD){
             this.preloadScene.audio.play(this.preloadScene.audio.solveObjectiveSound);

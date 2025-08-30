@@ -12,9 +12,10 @@ const CARD_TITLES = {
 export class Turn{
     constructor(scene){
         this.scene = scene;
-        const { PreloadScene, TurnEndedScene } = scene.game.scene.keys;
+        const { PreloadScene, TurnEndedScene, PlayScene } = scene.game.scene.keys;
         this.turnEndedScene = TurnEndedScene;
         this.preloadScene = PreloadScene;
+        this.playScene = PlayScene;
         const { hand, anomalyPile } = scene.gameplayUI;
       
         this.anomalyPile = anomalyPile;

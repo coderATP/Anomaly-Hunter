@@ -15,7 +15,7 @@ export class OutworldToAnomaly extends Movement{
         
         if(!sourceContainer.length) return;
         //DEVELOPER MODE TO QUICKLY RESOLVE ANY ANOMALY
-        sourceContainer.bringToTop(sourceContainer.list[6])
+        //sourceContainer.bringToTop(sourceContainer.list[5])
         this.card = sourceContainer.list[sourceContainer.length-1];
         //display card frame
         this.card.setFrame(this.card.getData("frame"));

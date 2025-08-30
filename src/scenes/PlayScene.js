@@ -20,6 +20,8 @@ import { AnomalyTextbox } from "../entities/textboxes/AnomalyTextbox.js";
 //states
 import { ResolveState, RecallState, DiscardState, SwapState, EndState} from "../states/gameplayButtons/ButtonStates.js";
 import { DeckClickState } from "../states/DeckClickState.js";
+//progress messages
+import { Turn1Progress } from "../turns/progress_messages/Turn1Progress.js";
 
 
 export class PlayScene extends BaseScene{
@@ -208,7 +210,7 @@ export class PlayScene extends BaseScene{
             this.canDrawACard = true;
             new DeckClickState(this).enter();
             this.drawACardFromDeck()
-                .then(value => { this.reduceDP() })
+                .then(value => { return this.reduceDP() })
             setTimeout(()=>{ this.canDrawACard = false; }, 1000)
         }
         /*else{ 
@@ -427,6 +429,16 @@ export class PlayScene extends BaseScene{
         })
     }
     //step 3
+    //addProgressMessage
+    addProgressMessage(){
+        return new Promise((resolve, reject) => {
+            setTimeout(()=>{
+                this.progressMessage = new Turn1Progress(this).add();
+                resolve( this.progressMessage.add() )
+            }, 800)
+
+        })
+    }
     sendCardsToHand(){
         return new Promise((resolve, reject) => {
             //send cards to Hand afterward
@@ -439,7 +451,8 @@ export class PlayScene extends BaseScene{
     beginFirstRound(){
         this.showNewTurnMessage()
             .then(value=> { return this.sendAnomalyCardFromOutworld() })
-            .then(value=>{ return this.sendCardsToHand() })    
+            .then(value=> { return this.addProgressMessage() })
+            .then(value=>{ return this.sendCardsToHand() })
     }
 
     create(){
