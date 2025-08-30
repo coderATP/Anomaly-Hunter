@@ -30,9 +30,24 @@ export class PlayScene extends BaseScene{
         this.handsOfTime = new HandsOfTime(this);
         this.textDisplayTimer = 0;
         this.textDisplayInterval = 2300;
+        this.canDrawACard = false;
     }
-    
+    initRegistry(){
+        this.registry.set("pastCardsDealt", 0);
+        this.registry.set("presentCardsDealt", 0);
+        this.registry.set("futureCardsDealt", 0);
+        
+        this.registry.set("pastPairHasSolvedAnomaly", 0);
+        this.registry.set("presentPairHasSolvedAnomaly", 0);
+        this.registry.set("futurePairHasSolvedAnomaly", 0);
+        
+        this.registry.set("pastTrioHasSolvedAnomaly", 0);
+        this.registry.set("presentTrioHasSolvedAnomaly", 0);
+        this.registry.set("futureTrioHasSolvedAnomaly", 0);
+ 
+    }
     showInterface(){
+        this.initRegistry();
         this.hideAllScreens();
         this.showOne(this.playScreen, "grid", -1);
         this.backgroundImage = this.add.image(0,0, "background1").setOrigin(0);
@@ -188,8 +203,17 @@ export class PlayScene extends BaseScene{
             this.recalling = true;
         })
     }
-    dealFromDeck(){
-        
+    manuallyDealFromDeck(){
+        if(!this.canDrawACard){
+            this.canDrawACard = true;
+            new DeckClickState(this).enter();
+            this.drawACardFromDeck()
+                .then(value => { this.reduceDP() })
+            setTimeout(()=>{ this.canDrawACard = false; }, 1000)
+        }
+        /*else{ 
+            console.log("Wait a second before drawing another card")
+        }*/
     }
     swapWithDeck(){
         this.gameplayUI.swapBtn.hitArea.on('pointerdown', ()=>{
@@ -257,9 +281,8 @@ export class PlayScene extends BaseScene{
                     break;
                     }
                     case "deck":{
-                        new DeckClickState(this).enter();
-                        this.drawACardFromDeck()
-                            .then(value=>{ this.reduceDP() })
+                        this.manuallyDealFromDeck();
+                        
                     break;
                     }
                     case "discard":{

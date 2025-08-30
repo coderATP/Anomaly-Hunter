@@ -100,6 +100,7 @@ export class Scroll{
         this.checkboxGraphics = [];
         for(let i = 0; i < this.texts.length; ++i){
             const graphics = this.scene.add.graphics({lineStyle: {width: 2, color: 0xffffff}}).setDepth(this.body.depth+1);
+            graphics.checked = false;
             this.checkboxGraphics.push(graphics);
             const rect = new Phaser.Geom.Rectangle(
                 this.body.x + this.body.displayWidth*0.9 - 5,
@@ -118,14 +119,17 @@ export class Scroll{
         //destroy texts
         this.texts.forEach(text=>{ text.destroy(); })
     }
+    
     checkBox(index){
         this.checkboxGraphics[index].clear();
         this.checkboxGraphics[index].fillStyle(0x000000);
         this.checkboxGraphics[index].fillRectShape(this.checkboxes[index]);
         this.checkboxGraphics[index].setName(index);
+        this.checkboxGraphics[index].checked = true;
     }
     uncheckBox(box, index){
         this.checkboxGraphics[index].clear();
+        this.checkboxGraphics[index].checked = false;
     }
     addTweens(){
         this.scene.tweens.add({

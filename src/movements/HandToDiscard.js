@@ -1,6 +1,7 @@
 import { Movement } from "./Movement.js";
 import { Turn1 } from "../turns/Turn1.js";
 import { Turn2 } from "../turns/Turn2.js";
+import { Turn3 } from "../turns/Turn3.js";
 
 export class HandToDiscard extends Movement{
     constructor(scene, sourceContainer){
@@ -87,7 +88,7 @@ export class HandToDiscard extends Movement{
     }
     
     solveTurn(){
-        const turns = [Turn1, Turn2];
+        const turns = [Turn1, Turn2, Turn3];
         const turnIndex = this.anomalyPile.container.list[0].getData("level") - 1;
         const turn = new turns[turnIndex](this.scene);
         turn.solveObjectivesWith(this.card);
