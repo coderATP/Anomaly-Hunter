@@ -31,7 +31,12 @@ export class Turn1Progress{
         return this;
     }
     clearAll(){
-        this.messages.forEach(msg=>{ msg.destroy() });
+        console.log("clearing old progress message for round 1")
+        this.messages.forEach(msg=>{ 
+            msg.setActive(false)
+                .setVisible(false)
+            msg.destroy();
+            });
         return this;
     }
 }

@@ -16,10 +16,12 @@ export class Turn{
         this.turnEndedScene = TurnEndedScene;
         this.preloadScene = PreloadScene;
         this.playScene = PlayScene;
-        const { hand, anomalyPile } = scene.gameplayUI;
+        const { hand, anomalyPile, discard } = scene.gameplayUI;
       
         this.anomalyPile = anomalyPile;
         this.hand = hand;
+        this.discard = discard;
+        
         this.solvedObjectives = 0;
         this.CARD_TITLES = CARD_TITLES;
     }
@@ -36,7 +38,7 @@ export class Turn{
         eventEmitter.on("TURN_ENDED", ()=>{
             if(this.turnEndedScene.turnEndedMode) return;
             if(!this.scene.scene.isPaused("PlayScene")){
-                setTimeout(()=>{ this.scene.scene.pause(); }, 610);
+                setTimeout(()=>{ this.playScene.scene.pause(); }, 610);
                 this.scene.scene.launch("TurnEndedScene");
                 this.turnEndedScene.turnEndedMode = true;
             }

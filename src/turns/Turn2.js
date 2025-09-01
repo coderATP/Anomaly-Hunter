@@ -3,6 +3,8 @@ import { Turn } from "./Turn.js";
 export class Turn2 extends Turn{
 
     solveObjectivesWith(card){
+        this.playScene.registry.set("currentTurnIndex", 1);
+
         if(card.getData("title")=== this.CARD_TITLES.PAST_CARD){
             this.scene.registry.inc("pastCardsDealt", 1);
             if(this.scene.registry.get("pastCardsDealt") >= 2){
@@ -39,7 +41,6 @@ export class Turn2 extends Turn{
         else if(card.getData("title") === this.CARD_TITLES.TIME_THIEF){
             //alert("olè!!!");
         }
-        console.log(this.scene.registry.get("pastCardsDealt"), this.scene.registry.get("presentCardsDealt"), this.scene.registry.get("futureCardsDealt"),);
         this.checkAnomalyResolved();
     }
 }

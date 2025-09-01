@@ -49,7 +49,7 @@ export class MultipleHandToDeck extends Movement{
                 const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card", true)
                     .setDisplaySize(targetContainer.width, targetContainer.height)
                     .setInteractive({draggable: false})
-                    .setFrame(this.card.getData("frame"));
+                    .setFrame(59);
                 card.setData({
                     x: card.x,
                     y: card.y,
@@ -70,7 +70,7 @@ export class MultipleHandToDeck extends Movement{
                 
                 targetContainer.addAt(card, 0);
                 card.setPosition(0, 0);
-                targetContainer.list.forEach((card, i)=>{ card.setPosition(-i*0.25, 0) })
+                targetContainer.list.forEach((card, i)=>{ card.setPosition(-i*0.25, 0.15) })
                 card.setData({x: card.x, y: card.y}) 
                 
                 sourceContainer.list.pop();

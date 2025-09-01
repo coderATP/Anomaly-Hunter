@@ -3,11 +3,10 @@ import { Turn1 } from "../turns/Turn1.js";
 import { Turn2 } from "../turns/Turn2.js";
 import { Turn3 } from "../turns/Turn3.js";
 
-export class HandToDiscard extends Movement{
-    constructor(scene, sourceContainer){
+export class Recycle extends Movement{
+    constructor(scene){
         super(scene);
-        this.id = "handToDiscard";
-        this.sourceContainer = sourceContainer;
+        this.id = "recycle";
         const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
         const { PreloadScene } = scene.game.scene.keys;
         this.preloadScene = PreloadScene;
@@ -19,9 +18,9 @@ export class HandToDiscard extends Movement{
     
     execute(){
         this.preloadScene.audio.play(this.preloadScene.audio.swooshSound);
-        const sourceContainer = this.sourceContainer;
+        const sourceContainer = this.discard.container;
         const targetContainer = this.discard.container;
-
+        
         this.card = sourceContainer.list[sourceContainer.length-1];
         this.card.setFrame(this.card.getData("frame"));
         
@@ -29,9 +28,9 @@ export class HandToDiscard extends Movement{
         this.targetX = targetContainer.x - sourceContainer.x;
        
         const points = [
-            sourceContainer.x+sourceContainer.width, sourceContainer.y,
-            this.anomalyPile.container.x - this.anomalyPile.container.width, this.anomalyPile.container.y + this.anomalyPile.container.height,
-            this.anomalyPile.container.x + this.anomalyPile.container.width, this.anomalyPile.container.y + this.anomalyPile.container.height,
+            sourceContainer.x-sourceContainer.width, sourceContainer.y,
+            this.anomalyPile.container.x - this.anomalyPile.container.width, 0,
+            this.hand.containers[0].width, this.hand.containers[0].y,
             targetContainer.x+targetContainer.width/2, targetContainer.y+targetContainer.height/2,
         ]
         const path = new Phaser.Curves.Path(sourceContainer.x, sourceContainer.y);
@@ -42,9 +41,6 @@ export class HandToDiscard extends Movement{
             .setDepth(sourceContainer.depth+1);
         //hide card until ready to destroy
         this.card.setVisible(false);
-        
-        //solve objectives along the line
-        setTimeout(()=>{ this.solveTurn(); }, 500);
         
         follower.startFollow({
             duration: 1000,
@@ -62,13 +58,13 @@ export class HandToDiscard extends Movement{
                 card.setData({
                     x: card.x,
                     y: card.y,
-                    sourceZone: "marketZone",
+                    sourceZone: "discardZone",
                     frame: this.card.getData("frame"),
                     suit: this.card.getData("suit"),
                     colour: this.card.getData("colour"),
                     value: this.card.getData("value"),
                     index: targetContainer.getData("index"),
-                    zone: "discard",
+                    zone: "hand",
                     rect: new Phaser.Geom.Rectangle(targetContainer.x, targetContainer.y, targetContainer.width, targetContainer.height),
                     title: this.card.getData("title"),
                     attributes: this.card.getData("attributes"),
@@ -81,17 +77,10 @@ export class HandToDiscard extends Movement{
                 card.setPosition(0, 0);
                 card.setData({x: card.x, y: card.y}) 
                 
-                sourceContainer.list.pop();
+                sourceContainer.list.shift();
                 this.card = null; 
             }
         })
     }
     
-    solveTurn(){
-        const turns = [Turn1, Turn2, Turn3];
-        const turnIndex = this.anomalyPile.container.list[0].getData("level") - 1;
-        const turn = new turns[turnIndex](this.scene);
-        turn.solveObjectivesWith(this.card);
- 
-    }
 }

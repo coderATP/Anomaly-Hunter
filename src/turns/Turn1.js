@@ -3,6 +3,8 @@ import {Turn } from "./Turn.js";
 export class Turn1 extends Turn{
     
     solveObjectivesWith(card){
+        this.playScene.registry.set("currentTurnIndex", 0);
+
         if(card.getData("title")=== this.CARD_TITLES.PAST_CARD){
             this.preloadScene.audio.play(this.preloadScene.audio.solveObjectiveSound);
             this.anomalyPile.scroll.checkBox(0);

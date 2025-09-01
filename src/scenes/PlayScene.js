@@ -7,6 +7,7 @@ import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { HandToVacant } from "../movements/HandToVacant.js";
 import { VisitorToHost } from "../movements/VisitorToHost.js";
 import { HandToDiscard } from "../movements/HandToDiscard.js";
+import { Recycle } from "../movements/Recycle.js";
 
 import { HandsOfTime } from "../HandsOfTime.js";
 import { eventEmitter } from "../events/EventEmitter.js";
@@ -35,6 +36,8 @@ export class PlayScene extends BaseScene{
         this.canDrawACard = false;
     }
     initRegistry(){
+        this.registry.set("currentTurnIndex", 0);
+        
         this.registry.set("pastCardsDealt", 0);
         this.registry.set("presentCardsDealt", 0);
         this.registry.set("futureCardsDealt", 0);
@@ -46,8 +49,10 @@ export class PlayScene extends BaseScene{
         this.registry.set("pastTrioHasSolvedAnomaly", 0);
         this.registry.set("presentTrioHasSolvedAnomaly", 0);
         this.registry.set("futureTrioHasSolvedAnomaly", 0);
- 
+        
+        this.registry.set("turn3_suitToMatchCount", 0);
     }
+    
     showInterface(){
         this.initRegistry();
         this.hideAllScreens();
@@ -174,6 +179,60 @@ export class PlayScene extends BaseScene{
         })
         return this;
     }
+    recycleACard(){
+        this.input.on("pointerdown", (pointer, gameobject)=>{
+            if(!gameobject[0]) return;
+            if(gameobject[0].type !== "Image") return;
+            const zoneType = gameobject[0].getData("zone");
+            const card = gameobject[0];
+            if(zoneType !== "discard") return;
+            //return altogether if we're not solving anomaly three
+            //now, we just need to register turnIndex
+            const currentTurnIndex = this.registry.get("currentTurnIndex");
+            if(currentTurnIndex !== 2) return;
+            this.recycling = false;
+            if (this.recycling) return;
+            //disable the buttons first
+            this.gameplayUI.gameplayButtons.forEach(btn=>{ btn.hitArea.disableInteractive() })
+            //so that player will have to recycle before dealing the remaining cards from hand
+            //CARRY OUT THE PROMISES FROM LINE 197
+            return new Promise((resolve, reject)=>{
+                
+                this.preloadScene.audio.shuffleSound.play()
+                this.gameplayUI.discard.container.shuffle();
+                //sound will play for 1 sec. afterward, shufle and store the suit of the card on top
+                setTimeout(()=>{
+                    const topCard = this.gameplayUI.discard.container.list[this.gameplayUI.discard.container.length-1]
+                    resolve( this.registry.set("recycledSuit", topCard .getData("suit")) );
+                }, 1000)
+            }).then(value=>{
+                return new Promise((resolve, reject)=>{
+                    //if the discard pile registers a click, then recycle
+                    setTimeout(()=>{
+                        if(!this.gameplayUI.discard.container.length) reject("No card in the discard");          
+                        this.gameplayUI.discard.container.list[0].once("pointerdown", ()=>{
+                            const command = new Recycle(this);
+                            resolve( this.commandHandler.execute(command) );
+                        })
+                    }, 10)
+                })
+            }).then(value=>{ 
+                return new Promise((resolve, reject) => {
+                    //then check the recycled box, store a reference to the suit and move to the next objective
+                    setTimeout(()=>{
+                        resolve (this.preloadScene.audio.play(this.preloadScene.audio.solveObjectiveSound) );
+                        resolve(this.gameplayUI.anomalyPile.scroll.checkBox(0));
+                    }, 10)
+                })
+            })
+            //restore button states to active
+            this.gameplayUI.gameplayButtons.forEach(btn=>{ btn.hitArea.disableInteractive() })
+
+            this.recycling = true;
+        
+        })
+        
+    }
     
     resolveAnomaly(){
         this.gameplayUI.resolveBtn.hitArea.on('pointerdown', ()=>{
@@ -185,6 +244,7 @@ export class PlayScene extends BaseScene{
             hand.containers.forEach((container, i)=>{
                 if(container.length){
                     container.list.forEach(card=>{
+                        card.removeAllListeners("pointerdown");
                         card.on("pointerdown", ()=>{
                             if(!this.gameplayUI.resolveBtn.active) return; 
                             const command = new HandToDiscard(this, container);
@@ -251,6 +311,7 @@ export class PlayScene extends BaseScene{
         //enter states for each of the five buttons
         //Resolve, Recall, Discard, Swap and End
         this.resolveAnomaly();
+        this.recycleACard();
         this.recallLastAction();
         this.discardAHand();
         this.swapWithDeck();
@@ -413,46 +474,45 @@ export class PlayScene extends BaseScene{
     //step 1
     showNewTurnMessage(){
         return new Promise((resolve, reject) => {
-            resolve( this.gameplayUI.createNewTurnMessage(1) );
+            this.gameplayUI.createNewTurnMessage(1);
+            this.time.delayedCall(100, resolve);
         })
     }
     //step 2
     sendAnomalyCardFromOutworld(){
         return new Promise((resolve, reject)=>{
             //remove message after 2 sec
+            this.gameplayUI.hideMessage();
+            const command = new OutworldToAnomaly(this);
+            this.commandHandler.execute(command);
             //and send anomaly card down from outworld
-            setTimeout(()=>{
-                const command = new OutworldToAnomaly(this);
-                resolve( this.commandHandler.execute(command) );
-                resolve( this.gameplayUI.hideMessage() )
-            }, 2000)
+            //resolve();
+            this.time.delayedCall(500, resolve);
         })
     }
     //step 3
     //addProgressMessage
     addProgressMessage(){
         return new Promise((resolve, reject) => {
-            setTimeout(()=>{
-                this.progressMessage = new Turn1Progress(this).add();
-                resolve( this.progressMessage.add() )
-            }, 800)
-
+            this.progressMessage = new Turn1Progress(this);
+            this.progressMessage.add()
+            this.time.delayedCall(300, resolve);
         })
     }
+    //step 4
+    //send 5 cards to hand
     sendCardsToHand(){
         return new Promise((resolve, reject) => {
-            //send cards to Hand afterward
-            setTimeout(()=>{
-                const command = new DeckToHand(this, 5);
-                this.commandHandler.execute(command); 
-            }, 2000)
+            const command = new DeckToHand(this, 5);
+            this.commandHandler.execute(command);
+            this.time.delayedCall(100, resolve);
         })
     }
-    beginFirstRound(){
-        this.showNewTurnMessage()
-            .then(value=> { return this.sendAnomalyCardFromOutworld() })
-            .then(value=> { return this.addProgressMessage() })
-            .then(value=>{ return this.sendCardsToHand() })
+    async beginFirstRound(){
+        await this.showNewTurnMessage();
+        await this.sendAnomalyCardFromOutworld();
+        await this.addProgressMessage();
+        await this.sendCardsToHand();
     }
 
     create(){

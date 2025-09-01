@@ -81,7 +81,7 @@ export class HandsOfTime{
         const centerX = this.scene.gameplayUI.middleSection.centerX - cardDimensions.originalWidth/2;
         this.outworlders = this.scene.add.container(centerX, -200).setDepth(1);
         this.outworlders.add( [...this.rifts.list, ...this.paradoxes.list] );
-
+        this.outworlders.list.forEach(card=>{ card.setData({zone: "anomaly"})})
         //add remaining 44 cards to deck
         deck.container.add(this.deck.list.splice(0, this.deck.length));
         //adjust size of cards to fit in container
@@ -89,6 +89,8 @@ export class HandsOfTime{
         deck.container.list.forEach((card, i)=>{
             card.setDisplaySize(deck.width, deck.height)
                 .setPosition(-i*0.15, 0)
+                .setInteractive({draggable: false})
+                .setData({zone: "deck"})
         })
         //set all emptied containers to null;
         this.rifts = this.anomalies = this.deck = null;

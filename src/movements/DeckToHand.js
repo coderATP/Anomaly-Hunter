@@ -65,7 +65,7 @@ export class DeckToHand extends Movement{
                 card.setData({x: card.x, y: card.y}) 
                 
                 sourcePile.container.list.pop();
-                this.card = null;
+                sourcePile.container.list.forEach((card, i)=>{ card.setPosition(-i*0.25, 0)})
                 
                 //move four more cards
                 this.movementCount++;
