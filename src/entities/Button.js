@@ -64,6 +64,7 @@ export class Button {
     changePosition(rect){
         
     }
+    deactivate(){ this.active = false; return this;}
     enterHoverState() {
         if(this.active) return;
         const fillColor = 0x0000aa;

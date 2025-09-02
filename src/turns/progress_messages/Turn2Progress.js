@@ -31,8 +31,8 @@ export class Turn2Progress{
         return this;
     }
     clearAll(){
+        console.log("clearing old progress message for level 2")
         this.messages.forEach(msg=>{ 
-            console.log("clearing old progress message")
             msg.setActive(false)
                 .setVisible(false)
             msg.destroy();

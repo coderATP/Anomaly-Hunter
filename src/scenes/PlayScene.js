@@ -7,7 +7,7 @@ import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { HandToVacant } from "../movements/HandToVacant.js";
 import { VisitorToHost } from "../movements/VisitorToHost.js";
 import { HandToDiscard } from "../movements/HandToDiscard.js";
-import { Recycle } from "../movements/Recycle.js";
+import { SwapWithDeck } from "../movements/SwapWithDeck.js";
 
 import { HandsOfTime } from "../HandsOfTime.js";
 import { eventEmitter } from "../events/EventEmitter.js";
@@ -51,6 +51,19 @@ export class PlayScene extends BaseScene{
         this.registry.set("futureTrioHasSolvedAnomaly", 0);
         
         this.registry.set("turn3_suitToMatchCount", 0);
+        
+        this.registry.set("turn4_cardsInfo", []);
+        this.registry.set("turn4_cardCounts", 0);
+        this.registry.set("turn4_nextCheckboxProgress", 0);
+        
+        this.registry.set("turn5_cardsInfo", []);
+        this.registry.set("turn5_cardCounts", 0);
+        this.registry.set("turn5_nextCheckboxProgress", 0);
+        
+        this.registry.set("turn6_cardsInfo", []);
+        this.registry.set("turn6_cardCounts", 0);
+        this.registry.set("turn6_nextCheckboxProgress", 0);
+
     }
     
     showInterface(){
@@ -179,60 +192,6 @@ export class PlayScene extends BaseScene{
         })
         return this;
     }
-    recycleACard(){
-        this.input.on("pointerdown", (pointer, gameobject)=>{
-            if(!gameobject[0]) return;
-            if(gameobject[0].type !== "Image") return;
-            const zoneType = gameobject[0].getData("zone");
-            const card = gameobject[0];
-            if(zoneType !== "discard") return;
-            //return altogether if we're not solving anomaly three
-            //now, we just need to register turnIndex
-            const currentTurnIndex = this.registry.get("currentTurnIndex");
-            if(currentTurnIndex !== 2) return;
-            this.recycling = false;
-            if (this.recycling) return;
-            //disable the buttons first
-            this.gameplayUI.gameplayButtons.forEach(btn=>{ btn.hitArea.disableInteractive() })
-            //so that player will have to recycle before dealing the remaining cards from hand
-            //CARRY OUT THE PROMISES FROM LINE 197
-            return new Promise((resolve, reject)=>{
-                
-                this.preloadScene.audio.shuffleSound.play()
-                this.gameplayUI.discard.container.shuffle();
-                //sound will play for 1 sec. afterward, shufle and store the suit of the card on top
-                setTimeout(()=>{
-                    const topCard = this.gameplayUI.discard.container.list[this.gameplayUI.discard.container.length-1]
-                    resolve( this.registry.set("recycledSuit", topCard .getData("suit")) );
-                }, 1000)
-            }).then(value=>{
-                return new Promise((resolve, reject)=>{
-                    //if the discard pile registers a click, then recycle
-                    setTimeout(()=>{
-                        if(!this.gameplayUI.discard.container.length) reject("No card in the discard");          
-                        this.gameplayUI.discard.container.list[0].once("pointerdown", ()=>{
-                            const command = new Recycle(this);
-                            resolve( this.commandHandler.execute(command) );
-                        })
-                    }, 10)
-                })
-            }).then(value=>{ 
-                return new Promise((resolve, reject) => {
-                    //then check the recycled box, store a reference to the suit and move to the next objective
-                    setTimeout(()=>{
-                        resolve (this.preloadScene.audio.play(this.preloadScene.audio.solveObjectiveSound) );
-                        resolve(this.gameplayUI.anomalyPile.scroll.checkBox(0));
-                    }, 10)
-                })
-            })
-            //restore button states to active
-            this.gameplayUI.gameplayButtons.forEach(btn=>{ btn.hitArea.disableInteractive() })
-
-            this.recycling = true;
-        
-        })
-        
-    }
     
     resolveAnomaly(){
         this.gameplayUI.resolveBtn.hitArea.on('pointerdown', ()=>{
@@ -283,6 +242,19 @@ export class PlayScene extends BaseScene{
             if(this.swapping) return;
             //enter swap button state
             new SwapState(this).enter();
+            const {hand} = this.gameplayUI;
+            hand.containers.forEach((container, i)=>{
+                if(container.length){
+                    container.list.forEach(card=>{
+                        card.removeAllListeners("pointerdown");
+                        card.on("pointerdown", ()=>{
+                            if(!this.gameplayUI.swapBtn.active) return; 
+                            const command = new SwapWithDeck(this, container);
+                            this.commandHandler.execute(command);
+                        })
+                    })
+                }
+            })
             this.swapping = true;
         })
     }
@@ -311,13 +283,13 @@ export class PlayScene extends BaseScene{
         //enter states for each of the five buttons
         //Resolve, Recall, Discard, Swap and End
         this.resolveAnomaly();
-        this.recycleACard();
         this.recallLastAction();
         this.discardAHand();
         this.swapWithDeck();
         this.endTurn();
         //turn ended message buttons (back and next)
         this.input.on("pointerdown", (pointer, gameobject)=>{
+            console.clear();
             if(!gameobject[0]) return;
             //I'm tapping on a card image
             if(gameobject[0].type === "Image"){
@@ -344,8 +316,10 @@ export class PlayScene extends BaseScene{
                     break;
                     }
                     case "deck":{
+                        let hasDealt = false;
+                        if(hasDealt) return;
                         this.manuallyDealFromDeck();
-                        
+                        hasDealt = true;
                     break;
                     }
                     case "discard":{
@@ -355,7 +329,7 @@ export class PlayScene extends BaseScene{
                     default:{ break; }
                 }
             }
-            else{ console.log("you're clicking on a " + gameobject[0].type + " gameobject")}
+            else{ /*console.log("you're clicking on a " + gameobject[0].type + " gameobject")*/}
         })
         return this;
         
@@ -384,7 +358,6 @@ export class PlayScene extends BaseScene{
                 resolve( this.commandHandler.execute(command) );
                 resolve( this.preloadScene.audio.drawSound.play() );
             }
-                
         })
       
     }

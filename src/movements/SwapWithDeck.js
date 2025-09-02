@@ -1,24 +1,21 @@
 import { Movement } from "./Movement.js";
+import { DeckToHand } from "./DeckToHand.js";
 
-export class OutworldToAnomaly extends Movement{
-    constructor(scene){
+
+export class SwapWithDeck extends Movement{
+    constructor(scene, sourceContainer){
         super(scene);
-        this.id = "outworldToAnomaly";
-        this.timeout = 1500;
+        this.id = "SwapWithDeck";
+        this.sourceContainer = sourceContainer;
     }
     
     execute(){
         const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
-        const { outworlders } = this.scene.handsOfTime;
-        const sourceContainer = outworlders;
-        const targetContainer = anomalyPile.container;
         
-        if(!sourceContainer.length) return;
-        //DEVELOPER MODE TO QUICKLY RESOLVE ANY ANOMALY
-        sourceContainer.bringToTop(sourceContainer.list[1])
+        const sourceContainer = this.sourceContainer;
+        const targetContainer = deck.container;
+        
         this.card = sourceContainer.list[sourceContainer.length-1];
-        //display card frame
-        this.card.setFrame(this.card.getData("frame"));
         
         this.targetY = targetContainer.y - sourceContainer.y;
         this.targetX = targetContainer.x - sourceContainer.x;
@@ -29,42 +26,45 @@ export class OutworldToAnomaly extends Movement{
             x: this.targetX,
             displayWidth: targetContainer.width,
             displayHeight: targetContainer.height,
-            duration: this.timeout,
-            ease: 'Bounce.out' || 'Linear' || 'Sine.easeInOut',
+            duration: 100,
+            ease: 'Linear',
             onComplete: ()=>{
                 const card = this.scene.createCard(targetContainer.getData("ownerID")+"Card", true)
                     .setDisplaySize(targetContainer.width, targetContainer.height)
-                    .setFrame(this.card.getData("frame"))
+                    .setInteractive({draggable: false})
+                    .setFrame(this.card.getData("frame"));
                 card.setData({
                     x: card.x,
                     y: card.y,
-                    sourceZone: "outworld",
+                    sourceZone: "HandZone",
                     frame: this.card.getData("frame"),
                     suit: this.card.getData("suit"),
                     colour: this.card.getData("colour"),
                     value: this.card.getData("value"),
                     index: targetContainer.getData("index"),
-                    zone: "anomaly",
+                    zone: "deck",
                     rect: new Phaser.Geom.Rectangle(targetContainer.x, targetContainer.y, targetContainer.width, targetContainer.height),
                     title: this.card.getData("title"),
                     attributes: this.card.getData("attributes"),
                     category: this.card.getData("category"),
                     level: this.card.getData("level"),
-                    reward: this.card.getData("reward"),
-                    objectives: this.card.getData("objectives"),
-                    firstCard: this.card.getData("firstCard"),
-                    secondCard: this.card.getData("secondCard"),
-                    thirdCard: this.card.getData("thirdCard")
+                    reward: this.card.getData("reward"), 
                 });
                 
-                targetContainer.add(card);
+                targetContainer.addAt(card, 0);
                 card.setPosition(0, 0);
+                targetContainer.list.forEach((card, i)=>{ card.setPosition(-i*0.25, 0)})
                 card.setData({x: card.x, y: card.y}) 
                 
                 sourceContainer.list.pop();
                 this.card = null;
-                //add objectives
-                anomalyPile.scroll.addObjectives(card).addCheckboxes();
+                //send card from deck
+                return new Promise((resolve, reject) => {
+                    const command = new DeckToHand(this.scene, 1);
+                    this.scene.commandHandler.execute(command);
+                    this.scene.gameplayUI.swapBtn.deactivate().enterRestState();
+                    this.scene.time.delayedCall(50, resolve);
+                })
             }
         })
     }

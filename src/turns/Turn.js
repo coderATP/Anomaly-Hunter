@@ -38,7 +38,7 @@ export class Turn{
         eventEmitter.on("TURN_ENDED", ()=>{
             if(this.turnEndedScene.turnEndedMode) return;
             if(!this.scene.scene.isPaused("PlayScene")){
-                setTimeout(()=>{ this.playScene.scene.pause(); }, 610);
+                this.playScene.scene.pause();
                 this.scene.scene.launch("TurnEndedScene");
                 this.turnEndedScene.turnEndedMode = true;
             }

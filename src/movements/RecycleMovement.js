@@ -3,13 +3,14 @@ import { Turn1 } from "../turns/Turn1.js";
 import { Turn2 } from "../turns/Turn2.js";
 import { Turn3 } from "../turns/Turn3.js";
 
-export class Recycle extends Movement{
+export class RecycleMovement extends Movement{
     constructor(scene){
         super(scene);
-        this.id = "recycle";
+        this.id = "recycleMovement";
         const {hand, deck, discard, anomalyPile} = this.scene.gameplayUI.piles;
-        const { PreloadScene } = scene.game.scene.keys;
+        const { PreloadScene, PlayScene } = scene.game.scene.keys;
         this.preloadScene = PreloadScene;
+        this.playScene = PlayScene;
         this.hand = hand;
         this.discard = discard;
         this.anomalyPile = anomalyPile;
@@ -22,6 +23,9 @@ export class Recycle extends Movement{
         const targetContainer = this.discard.container;
         
         this.card = sourceContainer.list[sourceContainer.length-1];
+        //registry
+        this.playScene.registry.set("recycledSuit", this.card.getData("suit"));
+
         this.card.setFrame(this.card.getData("frame"));
         
         this.targetY = targetContainer.y - sourceContainer.y;
@@ -76,7 +80,8 @@ export class Recycle extends Movement{
                 targetContainer.add(card);
                 card.setPosition(0, 0);
                 card.setData({x: card.x, y: card.y}) 
-                
+                //update progress message
+                this.playScene.progressMessage.messages[0].setText(card.getData("value") + " of " + card.getData("suit") + " was recycled");
                 sourceContainer.list.shift();
                 this.card = null; 
             }

@@ -7,6 +7,8 @@ import { AnomalyToResolved } from "../movements/AnomalyToResolved.js";
 import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { MultipleHandToDeck } from "../movements/MultipleHandToDeck.js";
 import { DeckToHand } from "../movements/DeckToHand.js";
+import { RecycleMovement } from "../movements/RecycleMovement.js";
+
 //messages
 import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedMessage.js";
 //progress messages
@@ -175,11 +177,45 @@ export class GoToNextAnomalyScene extends BaseScene{
         await this.recycleRemainingCards();
         await this.castResolvedAnomalyOut();
         await this.sendNextAnomalyDown();
+ 
         await this.shuffleDeck();
         await this.sendCardsToHand();
         await this.createProgressMessage();
+        // extra functions for level 3
+        await this.shuffleDiscard();
+        await this.recycleFromDiscard();
     }
     
+    shuffleDiscard(){
+        return new Promise((resolve, reject) => {
+            const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
+            
+            if(turnIndex !== 2){
+                console.log("not yet level 3");
+                this.time.delayedCall(1, resolve);
+            }
+            else{
+                this.preloadScene.audio.shuffleSound.play();
+                this.time.delayedCall(10, resolve);
+            }
+
+        })
+    }
+    recycleFromDiscard(){
+        return new Promise((resolve, reject)=>{
+            const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
+            if(turnIndex !== 2) {
+                console.log("not yet level 3");
+                this.playScene.time.delayedCall(1, resolve);
+            }
+            else{
+                const command = new RecycleMovement(this.playScene);
+                this.playScene.commandHandler.execute(command);
+                this.time.delayedCall(1000, resolve);
+            }
+            
+        })
+    }
     createProgressMessage(){
         return new Promise((resolve, reject) => {
             setTimeout(()=>{
@@ -187,6 +223,7 @@ export class GoToNextAnomalyScene extends BaseScene{
                 const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
                 if(turnIndex){
                    this.playScene.progressMessage = new messages[turnIndex](this.playScene).add();
+                   if(turnIndex === 2) this.playScene.gameplayUI.anomalyPile.scroll.checkBox(0);
                    resolve("new message added");
                 }
                 else{

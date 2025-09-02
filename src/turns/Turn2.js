@@ -34,8 +34,7 @@ export class Turn2 extends Turn{
         }
         else if(card.getData("title") === this.CARD_TITLES.TIME_AGENT){
             if(card.getData("category") === "Expert"){
-                this.anomalyPile.scroll.checkBox(0);
-                setTimeout(()=>{ this.anomalyPile.scroll.checkBox(1); }, 200);
+                this.anomalyPile.scroll.checkBox(1);
             }
         }
         else if(card.getData("title") === this.CARD_TITLES.TIME_THIEF){
