@@ -92,11 +92,11 @@ export class GameplayUI {
         //three sections, equal sizes
         //set parameters
         //calculate height of 1 section
-        const marginY = 50;
+        const marginY = 30;
         const paddingY = 20;
         const numberOfSections = 3;
         const totalHeight = this.config.height;
-        const totalAvailableHeight = totalHeight - marginY* - paddingY*(numberOfSections-1);
+        const totalAvailableHeight = totalHeight - marginY*2 - paddingY*(numberOfSections-1);
         //calculate width of button
         const totalWidth = this.rightSection.width;
         const marginX = 5;
@@ -109,13 +109,13 @@ export class GameplayUI {
         this.displayTexts = [];
         for(let i = 0; i < numberOfSections; ++i){
             const x = this.rightSection.left+marginX
-            const y = this.config.height - sectionHeight - (i*sectionHeight) - paddingY  - marginY;
+            const y = this.config.height - sectionHeight - (i*sectionHeight) - marginY;
             const rect = new Phaser.Geom.Rectangle(x, y, maxWidth, sectionHeight);
             this.setRoundedBackgroundColor(rect, 0x22aa22, 0x0000ff, 0.8);
             //add headers
             const header = this.scene.add.text(rect.left+marginX, rect.top, "Swap Point", {fontSize: "25px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
             const text = this.scene.add.text(rect.left+marginX, rect.top, "0", {fontSize: "40px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
-    
+            text.setPosition(rect.left+marginX, rect.bottom-text.displayHeight);
             this.displayRects.push(rect);
             this.displayHeaders.push(header);
             this.displayTexts.push(text);
