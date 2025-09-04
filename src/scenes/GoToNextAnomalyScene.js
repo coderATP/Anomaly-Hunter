@@ -15,6 +15,11 @@ import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedM
 import { Turn1Progress } from "../turns/progress_messages/Turn1Progress.js";
 import { Turn2Progress } from "../turns/progress_messages/Turn2Progress.js";
 import { Turn3Progress } from "../turns/progress_messages/Turn3Progress.js";
+import { Turn4Progress } from "../turns/progress_messages/Turn4Progress.js";
+import { Turn5Progress } from "../turns/progress_messages/Turn5Progress.js";
+import { Turn6Progress } from "../turns/progress_messages/Turn6Progress.js";
+import { Turn7Progress } from "../turns/progress_messages/Turn7Progress.js";
+import { Turn8Progress } from "../turns/progress_messages/Turn8Progress.js";
   
   
 export class GoToNextAnomalyScene extends BaseScene{
@@ -191,7 +196,6 @@ export class GoToNextAnomalyScene extends BaseScene{
             const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
             
             if(turnIndex !== 2){
-                console.log("not yet level 3");
                 this.time.delayedCall(1, resolve);
             }
             else{
@@ -219,7 +223,7 @@ export class GoToNextAnomalyScene extends BaseScene{
     createProgressMessage(){
         return new Promise((resolve, reject) => {
             setTimeout(()=>{
-                const messages = [Turn1Progress, Turn2Progress, Turn3Progress];
+                const messages = [Turn1Progress, Turn2Progress, Turn3Progress, Turn4Progress, Turn5Progress, Turn6Progress, Turn7Progress, Turn8Progress];
                 const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
                 if(turnIndex){
                    this.playScene.progressMessage = new messages[turnIndex](this.playScene).add();

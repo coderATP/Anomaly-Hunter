@@ -199,8 +199,9 @@ export class HandsOfTime{
                             attributes: "Play 2 sets of three cards with different ranks (e.g. 2-4-9/2-4-9), creating an 'echo' effect.",
                             reward: "10 resources",
                             objectives:{
-                                playFirstSet: "Play first set of 3 cards",
-                                playSecondSet: "Play second set of 3 cards",
+                                playFirstPair: "Play first pair",
+                                playSecondPair: "Play second pair",
+                                playThird: "Play third pair",
                             }
                         })
                     }

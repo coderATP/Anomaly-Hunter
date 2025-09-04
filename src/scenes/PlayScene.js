@@ -64,6 +64,11 @@ export class PlayScene extends BaseScene{
         this.registry.set("turn6_cardCounts", 0);
         this.registry.set("turn6_nextCheckboxProgress", 0);
 
+        this.registry.set("turn7_cardCounts", 0);
+        this.registry.set("turn7_nextCheckboxProgress", 0);
+        
+        this.registry.set("turn8_allCards", [{value: 0, resolved: false}, {value: 0, resolved: false}, {value: 0, resolved: false}, {value: 0, resolved: false}, {value: 0, resolved: false}, {value: 0, resolved: false}, {value: 0, resolved: false}, {value: 0, resolved: false}, {value: 0, resolved: false}]);
+
     }
     
     showInterface(){
@@ -289,7 +294,7 @@ export class PlayScene extends BaseScene{
         this.endTurn();
         //turn ended message buttons (back and next)
         this.input.on("pointerdown", (pointer, gameobject)=>{
-            console.clear();
+            //console.clear();
             if(!gameobject[0]) return;
             //I'm tapping on a card image
             if(gameobject[0].type === "Image"){
