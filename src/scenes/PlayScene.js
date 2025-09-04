@@ -22,7 +22,7 @@ import { AnomalyTextbox } from "../entities/textboxes/AnomalyTextbox.js";
 import { ResolveState, RecallState, DiscardState, SwapState, EndState} from "../states/gameplayButtons/ButtonStates.js";
 import { DeckClickState } from "../states/DeckClickState.js";
 //progress messages
-import { Turn1Progress } from "../turns/progress_messages/Turn1Progress.js";
+import { ProgressMessage } from "../turns/ProgressMessage.js";
 
 
 export class PlayScene extends BaseScene{
@@ -355,13 +355,14 @@ export class PlayScene extends BaseScene{
                     break;
                 }
             }
-            if(!targetContainer && newPoints < 1) reject("No empty containers AND you do not have enough Draw Points");
-            else if(newPoints < 1) reject("You do not have enough Draw Points");
-            else if(!targetContainer) reject("You do not have an empty Hand");
+            if(!targetContainer && newPoints < 1) reject();
+            else if(newPoints < 1) reject();
+            else if(!targetContainer) reject();
             else{
                 const command = new DeckToHand(this, 1);
-                resolve( this.commandHandler.execute(command) );
-                resolve( this.preloadScene.audio.drawSound.play() );
+                this.commandHandler.execute(command);
+                this.preloadScene.audio.drawSound.play();
+                resolve();
             }
         })
       
@@ -378,11 +379,12 @@ export class PlayScene extends BaseScene{
             setTimeout(()=>{
                 let newPoints = parseInt(DPText.text) - 1;
                 if(newPoints < 0){
-                    reject("You do not have enough DPs");
+                    reject();
                 }
                 else{
-                    resolve( DPText.setText(newPoints) );
-                    resolve( DPText.setPosition(DPRect.centerX - DPText.displayWidth/2, DPRect.bottom - DPText.height - 10) );
+                    DPText.setText(newPoints);
+                    DPText.setPosition(DPRect.centerX - DPText.displayWidth/2, DPRect.bottom - DPText.height - 10)
+                    resolve();
                 }
             }, 30)
         })
@@ -463,8 +465,6 @@ export class PlayScene extends BaseScene{
             this.gameplayUI.hideMessage();
             const command = new OutworldToAnomaly(this);
             this.commandHandler.execute(command);
-            //and send anomaly card down from outworld
-            //resolve();
             this.time.delayedCall(500, resolve);
         })
     }
@@ -472,9 +472,8 @@ export class PlayScene extends BaseScene{
     //addProgressMessage
     addProgressMessage(){
         return new Promise((resolve, reject) => {
-            this.progressMessage = new Turn1Progress(this);
-            this.progressMessage.add()
-            this.time.delayedCall(300, resolve);
+            this.progressMessage = new ProgressMessage(this);
+            this.time.delayedCall(100, resolve);
         })
     }
     //step 4

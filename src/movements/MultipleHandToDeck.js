@@ -70,7 +70,7 @@ export class MultipleHandToDeck extends Movement{
                 
                 targetContainer.addAt(card, 0);
                 card.setPosition(0, 0);
-                targetContainer.list.forEach((card, i)=>{ card.setPosition(-i*0.25, 0.15) })
+                targetContainer.list.forEach((card, i)=>{ card.setPosition(-i*0.5, 0.5) })
                 card.setData({x: card.x, y: card.y}) 
                 
                 sourceContainer.list.pop();

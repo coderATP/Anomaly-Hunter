@@ -49,7 +49,11 @@ export class HandToDiscard extends Movement{
         this.card.setVisible(false);
         
         //solve objectives along the line
-        setTimeout(()=>{ this.solveTurn(); }, 500);
+        //also, update progress messages
+        setTimeout(()=>{
+            this.solveTurn();
+            this.scene.progressMessage.add(this.card);
+        }, 500);
         
         follower.startFollow({
             duration: 1000,

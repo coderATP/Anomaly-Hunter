@@ -8,19 +8,8 @@ import { OutworldToAnomaly } from "../movements/OutworldToAnomaly.js";
 import { MultipleHandToDeck } from "../movements/MultipleHandToDeck.js";
 import { DeckToHand } from "../movements/DeckToHand.js";
 import { RecycleMovement } from "../movements/RecycleMovement.js";
-
 //messages
 import { TurnEndedMessage, GoToNextAnomalyMessage } from "../entities/TurnEndedMessage.js";
-//progress messages
-import { Turn1Progress } from "../turns/progress_messages/Turn1Progress.js";
-import { Turn2Progress } from "../turns/progress_messages/Turn2Progress.js";
-import { Turn3Progress } from "../turns/progress_messages/Turn3Progress.js";
-import { Turn4Progress } from "../turns/progress_messages/Turn4Progress.js";
-import { Turn5Progress } from "../turns/progress_messages/Turn5Progress.js";
-import { Turn6Progress } from "../turns/progress_messages/Turn6Progress.js";
-import { Turn7Progress } from "../turns/progress_messages/Turn7Progress.js";
-import { Turn8Progress } from "../turns/progress_messages/Turn8Progress.js";
-  
   
 export class GoToNextAnomalyScene extends BaseScene{
     constructor(config){
@@ -32,13 +21,10 @@ export class GoToNextAnomalyScene extends BaseScene{
     }
     
     destroyEvents(){
-       // eventEmitter.destroy("MenuToOptions");
     }
     
     enter(){
         this.destroyEvents();
-       // this.hideAllScreens();
-        //this.showOne(this., "grid", 0);
     }
     
     goBackInTime(){
@@ -185,7 +171,7 @@ export class GoToNextAnomalyScene extends BaseScene{
  
         await this.shuffleDeck();
         await this.sendCardsToHand();
-        await this.createProgressMessage();
+       // await this.createProgressMessage();
         // extra functions for level 3
         await this.shuffleDiscard();
         await this.recycleFromDiscard();
@@ -209,7 +195,7 @@ export class GoToNextAnomalyScene extends BaseScene{
         return new Promise((resolve, reject)=>{
             const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
             if(turnIndex !== 2) {
-                console.log("not yet level 3");
+               // console.log("not yet level 3");
                 this.playScene.time.delayedCall(1, resolve);
             }
             else{
@@ -220,23 +206,7 @@ export class GoToNextAnomalyScene extends BaseScene{
             
         })
     }
-    createProgressMessage(){
-        return new Promise((resolve, reject) => {
-            setTimeout(()=>{
-                const messages = [Turn1Progress, Turn2Progress, Turn3Progress, Turn4Progress, Turn5Progress, Turn6Progress, Turn7Progress, Turn8Progress];
-                const turnIndex = this.playScene.gameplayUI.anomalyPile.container.list[0].getData("level") - 1;
-                if(turnIndex){
-                   this.playScene.progressMessage = new messages[turnIndex](this.playScene).add();
-                   if(turnIndex === 2) this.playScene.gameplayUI.anomalyPile.scroll.checkBox(0);
-                   resolve("new message added");
-                }
-                else{
-                    reject("No anomaly card in the pile yet");
-                }
-            }, 500)
-        })
-    }
-
+   
     create(){
         const { PreloadScene, PlayScene } = this.game.scene.keys;
         this.preloadScene = PreloadScene;

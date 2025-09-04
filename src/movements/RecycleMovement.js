@@ -1,7 +1,4 @@
 import { Movement } from "./Movement.js";
-import { Turn1 } from "../turns/Turn1.js";
-import { Turn2 } from "../turns/Turn2.js";
-import { Turn3 } from "../turns/Turn3.js";
 
 export class RecycleMovement extends Movement{
     constructor(scene){
@@ -80,8 +77,9 @@ export class RecycleMovement extends Movement{
                 targetContainer.add(card);
                 card.setPosition(0, 0);
                 card.setData({x: card.x, y: card.y}) 
-                //update progress message
-                this.playScene.progressMessage.messages[0].setText(card.getData("value") + " of " + card.getData("suit") + " was recycled");
+                //update checkbox
+                this.anomalyPile.scroll.checkBox(0);
+                
                 sourceContainer.list.shift();
                 this.card = null; 
             }

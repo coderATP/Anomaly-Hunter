@@ -1,7 +1,6 @@
 /**@type {import("../typings/phaser")} */
 import { BaseScene } from "./BaseScene.js";
 import { eventEmitter } from "../events/EventEmitter.js";
-//import { ui } from "../ui.js";
 
 export class OptionsScene extends BaseScene{
     constructor(config){

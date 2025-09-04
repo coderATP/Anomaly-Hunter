@@ -1,5 +1,4 @@
 import { Turn } from "./Turn.js";
-import { Turn8Progress } from "./progress_messages/Turn8Progress.js";
 
 export class Turn8 extends Turn{
     playFirstValidCard(card){
