@@ -8,7 +8,7 @@ export class Button {
         
         this.config = scene.config;
         this.graphics = scene.add.graphics().setDepth(0);
-        this.currentFontSize = 1;
+        this.currentFontSize = 10;
         this.active = false;
         
         //label (text)
@@ -34,6 +34,7 @@ export class Button {
     }
     
     setBackgroundColor(fillColor, borderColor, alpha=1, radius=4, lineWidth){
+        this.graphics.clear();
         this.graphics.fillStyle(fillColor, alpha); // color & transparency
         this.graphics.fillRoundedRect(this.rect.left,
             this.rect.top,
@@ -76,7 +77,7 @@ export class Button {
         if(!this.active){
             const fillColor = 0x22aa22;
             const strokeColor = 0x0056b3;
-            setTimeout(()=>{ this.setBackgroundColor(fillColor) }, 50);
+            this.setBackgroundColor(fillColor);
         } 
     }
     enterActiveState() {

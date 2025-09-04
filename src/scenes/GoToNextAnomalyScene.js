@@ -54,6 +54,7 @@ export class GoToNextAnomalyScene extends BaseScene{
         this.goToNextAnomalyMessage.buttons.retain.hitArea.once("pointerdown", ()=>{
             this.retaining = true;
             if(!this.retaining) return;
+            this.toNextSceneWithoutRecycle();
             //hide message and carry out the remaining tasks
             this.retaining = false;
         })
@@ -171,7 +172,21 @@ export class GoToNextAnomalyScene extends BaseScene{
  
         await this.shuffleDeck();
         await this.sendCardsToHand();
-       // await this.createProgressMessage();
+        // extra functions for level 3
+        await this.shuffleDiscard();
+        await this.recycleFromDiscard();
+    }
+    
+    async toNextSceneWithoutRecycle(){
+        await this.hideMessage();
+        await this.clearOldMessages();
+        await this.resumePlayScene();
+        await this.getDPReward();
+        await this.castResolvedAnomalyOut();
+        await this.sendNextAnomalyDown();
+ 
+        await this.shuffleDeck();
+        await this.sendCardsToHand();
         // extra functions for level 3
         await this.shuffleDiscard();
         await this.recycleFromDiscard();

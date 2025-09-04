@@ -203,9 +203,10 @@ export class PlayScene extends BaseScene{
             this.resolving = false;
             if(this.resolving) return;
             //enter resolve button state
-            new ResolveState(this).enter();
-            const {hand} = this.gameplayUI;
-            hand.containers.forEach((container, i)=>{
+            if(!this.resolveState){ this.resolveState = new ResolveState(this); }
+            this.resolveState.enter();
+
+            this.gameplayUI.hand.containers.forEach((container, i)=>{
                 if(container.length){
                     container.list.forEach(card=>{
                         card.removeAllListeners("pointerdown");
@@ -219,13 +220,17 @@ export class PlayScene extends BaseScene{
             })
             this.resolving = true;
         })
+        this.gameplayUI.resolveBtn.hitArea.input.enabled = false;
+        this.gameplayUI.resolveBtn.hitArea.input.enabled = true;
+        
     }
     recallLastAction(){
         this.gameplayUI.recallBtn.hitArea.on('pointerdown', ()=>{
             this.recalling = false;
             if(this.recalling) return;
             //enter recall button state
-            new RecallState(this).enter();
+            if(!this.recallState) { this.recallState = new RecallState(this) }
+            this.recallState.enter();
             this.recalling = true;
         })
     }
@@ -246,7 +251,8 @@ export class PlayScene extends BaseScene{
             this.swapping = false;
             if(this.swapping) return;
             //enter swap button state
-            new SwapState(this).enter();
+            if(!this.swapState) { this.swapState = new SwapState(this) }
+            this.swapState.enter();
             const {hand} = this.gameplayUI;
             hand.containers.forEach((container, i)=>{
                 if(container.length){
@@ -268,7 +274,8 @@ export class PlayScene extends BaseScene{
             this.discarding = false;
             if(this.discarding) return;
             //enter diacard button state
-            new DiscardState(this).enter();
+            if(!this.discardState) { this.discardState = new DiscardState(this) }
+            this.discardState.enter();
             this.discarding = true;
         })
     }
@@ -277,7 +284,8 @@ export class PlayScene extends BaseScene{
             this.ending = false;
             if(this.ending) return;
             //enter resolve button state
-            new EndState(this).enter();
+            if(!this.endState) { this.endState = new EndState(this) }
+            this.endState.enter();
             this.ending = true;
         })
     }
@@ -465,6 +473,8 @@ export class PlayScene extends BaseScene{
             this.gameplayUI.hideMessage();
             const command = new OutworldToAnomaly(this);
             this.commandHandler.execute(command);
+            //and send anomaly card down from outworld
+            //resolve();
             this.time.delayedCall(500, resolve);
         })
     }

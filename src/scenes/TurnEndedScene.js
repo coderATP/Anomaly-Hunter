@@ -24,7 +24,7 @@ export class TurnEndedScene extends BaseScene{
         //this.showOne(this., "grid", 0);
     }
     goBackInTime(){
-        this.turnEndedMessage.buttons.back.hitArea.on("pointerdown", ()=>{
+        this.turnEndedMessage.buttons.back.hitArea.once("pointerdown", ()=>{
             this.goingBackInTime = false;
             if(this.goingBackInTime) return;
             
