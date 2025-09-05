@@ -166,9 +166,9 @@ export class GameplayUI {
         const rows = 4;
         const cols = 2;
         
-        const sectionWidth = totalWidth/cols;
-        const sectionHeight = sectionWidth;
-        
+        const sectionHeight = (totalHeight/rows) * 0.7;
+        const sectionWidth = sectionHeight;
+
         this.progressSectionRects = [];
         let rectX, rectY;
         for(let i = 0; i < cols; ++i){
