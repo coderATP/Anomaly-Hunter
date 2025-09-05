@@ -16,7 +16,8 @@ export class GameplayUI {
         this.preloadScene = PreloadScene;
         
         this.marginX = this.config.width*0.025;
-        
+        //FONT SIZES
+        this.setFontSizes();
         //PILES INSTANTIATION
         this.anomalyPile = new AnomalyPile(scene, "Time Anomaly");
         this.hand = new Hand(scene, "Hand");
@@ -143,10 +144,17 @@ export class GameplayUI {
         //create progress section for each turn
         this.turnProgressRect = new Phaser.Geom.Rectangle(this.rightSection.left + marginX, this.rightSection.top + marginY, maxWidth, this.DPRect.top-marginY);
         this.setRoundedBackgroundColor(this.turnProgressRect, 0x22aa22, 0x0000ff, 0.8);
-        this.turnProgressHeader = this.scene.add.text(this.turnProgressRect.left+marginX, this.turnProgressRect.top, "This Round", {fontSize: "30px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
-        this.turnProgressHeader.appendText("You've Dealt:")
-            .setWordWrapWidth(this.turnProgressRect.width)
-            .setAlign("center");
+        this.turnProgressHeader = this.scene.add.text(this.turnProgressRect.left+marginX, this.turnProgressRect.top+5, "This Round You've Dealt:", {fontSize: this.turnProgressHeaderFontSize+"px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
+        //this.turnProgressHeader.appendText("You've Dealt:")
+        if(this.turnProgressHeader.displayWidth >= this.turnProgressRect.width){
+            this.turnProgressHeader
+                .setWordWrapWidth(this.turnProgressRect.width)
+                .setAlign("right");
+        }
+        else{
+            this.turnProgressHeader
+                .setPosition(this.turnProgressRect.centerX - this.turnProgressHeader.displayWidth/2, this.turnProgressRect.top+5)
+        }
         this.createCardsPlayedSection();
     }
     
@@ -330,5 +338,20 @@ export class GameplayUI {
     }
     hideMessage(){
         this.turnMessage.setVisible(false);
+    }
+    
+    setFontSizes(){
+        if(this.scene.config.width < 360 ){
+            this.turnProgressHeaderFontSize = 20;
+            this.turnProgressMessageFontSize = 20;
+        }
+        else if (this.scene.config.width < 720) {
+            this.turnProgressHeaderFontSize = 25;
+            this.turnProgressMessageFontSize = 30;
+        }
+        else{
+            this.turnProgressHeaderFontSize = 30;
+            this.turnProgressMessageFontSize = 40;
+        }
     }
 }
