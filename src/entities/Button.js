@@ -63,7 +63,7 @@ export class Button {
         this.hitArea.setActive(false).setVisible(false).disableInteractive();
     }
     changePosition(rect){
-        
+            this.label.setPosition(this.rect.centerX - this.label.width/2, this.rect.centerY - this.label.height/2);
     }
     deactivate(){ this.active = false; return this;}
     enterHoverState() {
@@ -91,10 +91,13 @@ export class Button {
         this.active = !this.active;
     }
     updateFontSize(time, delta){
-        if(this.label.width < (this.rect.width*0.8) ){
+        if(this.label.width < (this.rect.width*0.92) ){
             this.currentFontSize++;
             this.label.setFontSize(this.currentFontSize);
             this.label.setPosition(this.rect.centerX - this.label.width/2, this.rect.centerY - this.label.height/2);
+        }
+        else{
+            return;
         }
     }
 }

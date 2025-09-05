@@ -48,9 +48,10 @@ export class PreloadScene extends BaseScene{
                     this.load.image("instructions", "../images/instructions.png");
                     this.load.image("scrollBody", "../images/scroll_body.png");
                     this.load.image("scrollEnd", "../images/scroll_end.png");
+                    this.load.image("logo", "../images/hands_of_time_logo.png");
 
                     this.load.image("gold_chain", "../images/gold_chain.png");
-                    this.load.image("background1", "images/background1.png");
+                    this.load.image("background1", "images/background.png");
                     this.load.spritesheet("cards", "../images/cards.png",
                         {frameWidth: 88, frameHeight: 128});
                 }
