@@ -101,7 +101,7 @@ export class GameplayUI {
         const totalWidth = this.rightSection.width;
         const marginX = 5;
         const maxWidth = totalWidth - marginX*2;  
-        const sectionHeight = 0.1*this.config.height;
+        const sectionHeight = 0.15*this.config.height;
 
         //texts
         this.displayHeaders = [];
@@ -120,8 +120,8 @@ export class GameplayUI {
             this.displayHeaders.push(header);
             this.displayTexts.push(text);
         }
+        
        
-
         //rects
         this.SPRect = this.displayRects[0];
         this.RPRect = this.displayRects[1];
@@ -146,8 +146,45 @@ export class GameplayUI {
         this.turnProgressHeader = this.scene.add.text(this.turnProgressRect.left+marginX, this.turnProgressRect.top, "This Round", {fontSize: "30px", fontFamily: "myOtherFont", color: "gold"}).setOrigin(0);
         this.turnProgressHeader.appendText("You've Dealt:")
             .setWordWrapWidth(this.turnProgressRect.width)
-            .setAlign("center")
+            .setAlign("center");
+        this.createCardsPlayedSection();
     }
+    
+    createCardsPlayedSection(){
+        //same as we did for hand section
+        //four rows,two columns
+        if(!this.turnProgressHeader || !this.turnProgressRect) return;
+        
+        let paddingX = 5, paddingY = 5;
+        let marginX = 5, marginY = 5;
+        const x = this.turnProgressRect.left - marginX;
+        const y = this.turnProgressHeader.y + this.turnProgressHeader.displayHeight + marginY;
+        const totalWidth = this.turnProgressRect.width - marginX*2;
+        const totalHeight = this.turnProgressRect.height - (this.turnProgressHeader.y+this.turnProgressHeader.displayHeight) - marginY*2;
+        
+        
+        const rows = 4;
+        const cols = 2;
+        
+        const sectionWidth = totalWidth/cols;
+        const sectionHeight = sectionWidth;
+        
+        this.progressSectionRects = [];
+        let rectX, rectY;
+        for(let i = 0; i < cols; ++i){
+            rectX = x+ i*(sectionWidth+paddingX) + marginX;
+            for(let j = 0; j < rows; ++j){
+                rectY = y + j*(sectionHeight+paddingY) +marginY;
+                const rect = new Phaser.Geom.Rectangle(rectX, rectY, sectionWidth, sectionHeight);
+                const graphics = this.scene.add.graphics().setDepth(1);
+                graphics.clear();
+                graphics.strokeRectShape(rect);
+                this.progressSectionRects.push(rect);
+            }
+        }
+
+    }
+
     //BUTTONS
     createButtons(){
         //SIX GENERIC BTNS
