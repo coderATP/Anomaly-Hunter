@@ -157,24 +157,25 @@ export class GameplayUI {
         
         let paddingX = 5, paddingY = 5;
         let marginX = 5, marginY = 5;
-        const x = this.turnProgressRect.left - marginX;
-        const y = this.turnProgressHeader.y + this.turnProgressHeader.displayHeight + marginY;
-        const totalWidth = this.turnProgressRect.width - marginX*2;
-        const totalHeight = this.turnProgressRect.height - (this.turnProgressHeader.y+this.turnProgressHeader.displayHeight) - marginY*2;
-        
         
         const rows = 4;
         const cols = 2;
+        const x = this.turnProgressRect.left + marginX;
+        const y = this.turnProgressHeader.y + this.turnProgressHeader.displayHeight + marginY;
+        const totalWidth = this.turnProgressRect.width - paddingX*(cols-1) - marginX*2;
+        const totalHeight = this.turnProgressRect.height - (this.turnProgressHeader.y+this.turnProgressHeader.displayHeight) - paddingY*(rows-1) - marginY*2;
         
-        const sectionHeight = (totalHeight/rows) * 0.7;
-        const sectionWidth = sectionHeight;
+        
+        
+        const sectionHeight = totalHeight/rows;
+        const sectionWidth = totalWidth/cols;
 
         this.progressSectionRects = [];
         let rectX, rectY;
         for(let i = 0; i < cols; ++i){
-            rectX = x+ i*(sectionWidth+paddingX) + marginX;
+            rectX = x+ i*(sectionWidth+paddingX);
             for(let j = 0; j < rows; ++j){
-                rectY = y + j*(sectionHeight+paddingY) +marginY;
+                rectY = y + j*(sectionHeight+paddingY);
                 const rect = new Phaser.Geom.Rectangle(rectX, rectY, sectionWidth, sectionHeight);
                 const graphics = this.scene.add.graphics().setDepth(1);
                 graphics.clear();
